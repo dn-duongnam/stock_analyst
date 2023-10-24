@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Biểu đồ dạng đường và nến</title>
+    <style>
+        /* Định dạng cho container chứa các biểu đồ dạng đường */
+        .line-chart-container {
+            display: flex; /* Hiển thị theo chiều ngang */
+            justify-content: space-between; /* Canh giữa các biểu đồ dạng đường */
+            align-items: center; /* Căn giữa theo chiều dọc */
+        }
+
+        /* Định dạng cho mỗi biểu đồ dạng đường */
+        .line-chart {
+            width: 23%; /* Độ rộng mỗi biểu đồ dạng đường (25% trừ một khoảng cách) */
+            margin-right: 2%; /* Khoảng cách giữa các biểu đồ dạng đường */
+        }
+
+        /* Định dạng cho biểu đồ nến (plot_cand) */
+        .candlestick-chart {
+            width: 100%; /* Biểu đồ nến chiếm toàn bộ chiều rộng của container */
+        }
+    </style>
+</head>
+<body>
+    <h1>Biểu đồ dạng đường và nến</h1>
+
+    <!-- Chọn mã cổ phiếu và khung giờ -->
+    <div>
+        <label for="ticker">Chọn mã cổ phiếu:</label>
+        <select id="ticker" name="ticker" class="select2">
+            <option value="">-- Chọn mã cổ phiếu --</option>
+            {% for code in stock_codes %}
+                <option value="{{ code }}" {% if code == ticker %}selected{% endif %}>{{ code }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div>
+        <label for="timeframe">Chọn khung giờ:</label>
+        <select id="timeframe" name="timeframe">
+            <option value="m1" {% if selected_timeframe == "m1" %}selected{% endif %}>M1</option>
+            <option value="m15" {% if selected_timeframe == "m15" %}selected{% endif %}>M15</option>
+            <option value="m30" {% if selected_timeframe == "m30" %}selected{% endif %}>M30</option>
+            <option value="h1" {% if selected_timeframe == "h1" %}selected{% endif %}>H1</option>
+            <option value="d1" {% if selected_timeframe == "d1" %}selected{% endif %}>D1</option>
+        </select>
+    </div>
+
+    <button onclick="updateChart()">Cập nhật biểu đồ</button>
+
+    <!-- Container chứa các biểu đồ dạng đường -->
+    <div class="line-chart-container">
+        <!-- Biểu đồ dạng đường 1 -->
+        <div class="line-chart">
+            <!-- Đặt dữ liệu cho biểu đồ dạng đường 1 ở đây -->
+            {{ plot_line | safe }}
+        </div>
+
+        <!-- Biểu đồ dạng đường 2 -->
+        <div class="line-chart">
+            <!-- Đặt dữ liệu cho biểu đồ dạng đường 2 ở đây -->
+            {{ plot_line | safe }}
+        </div>
+
+        <!-- Biểu đồ dạng đường 3 -->
+        <div class="line-chart">
+            <!-- Đặt dữ liệu cho biểu đồ dạng đường 3 ở đây -->
+            {{ plot_line | safe }}
+        </div>
+
+        <!-- Biểu đồ dạng đường 4 -->
+        <div class="line-chart">
+            <!-- Đặt dữ liệu cho biểu đồ dạng đường 4 ở đây -->
+            {{ plot_line | safe }}
+        </div>
+    </div>
+
+    <!-- Biểu đồ nến -->
+    <div class="candlestick-chart">
+        <!-- Đặt dữ liệu cho biểu đồ nến ở đây -->
+        {{ plot_cand | safe }}
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2();
+        });
+    
+        function updateChart() {
+            var selectedTicker = document.getElementById("ticker").value;
+            var selectedTimeframe = document.getElementById("timeframe").value;
+            if (selectedTicker && selectedTimeframe) {
+                location.href = "/cand_line_chart/" + selectedTimeframe + "/" + selectedTicker;
+            }
+        }
+    </script>
+    
+</body>
+</html>
