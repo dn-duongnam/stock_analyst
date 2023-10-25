@@ -130,7 +130,13 @@ def analyst(ticker = "TCH"):
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
                     xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
-                    yaxis_gridcolor='gray')  # Màu của đường kẻ ngang
+                    yaxis_gridcolor='gray',
+                    legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="right",
+                    x=1)) # Màu của đường kẻ ngang
     # Chuyển biểu đồ Plotly thành HTML
     plot_bb = fig_bb.to_html(full_html=False)
      # Tính trung bình trượt 5 ngày và 20 ngày
@@ -153,7 +159,13 @@ def analyst(ticker = "TCH"):
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
                     xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
-                    yaxis_gridcolor='gray')  # Màu của đường kẻ ngang
+                    yaxis_gridcolor='gray',
+                    legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="right",
+                    x=1))# Màu của đường kẻ ngang
     plot_ma = fig_ma.to_html(full_html=False)
     
         # Tính đường MACD (Moving Average Convergence Divergence)
@@ -185,7 +197,13 @@ def analyst(ticker = "TCH"):
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
                     xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
-                    yaxis_gridcolor='gray')  # Màu của đường kẻ ngang đồ
+                    yaxis_gridcolor='gray',
+                    legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="right",
+                    x=1))# Màu của đường kẻ ngang đồ
 
     plot_macd = fig_macd.to_html(full_html=False)
     
@@ -234,7 +252,13 @@ def analyst(ticker = "TCH"):
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
                     xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
-                    yaxis_gridcolor='gray')  # Màu của đường kẻ ngang đồ
+                    yaxis_gridcolor='gray',
+                    legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="right",
+                    x=1))# Màu của đường kẻ ngang đồ
     plot_stoch = fig_stoch.to_html(full_html=False)
     
     # Tính chỉ số RSI(14)
@@ -285,15 +309,19 @@ def analyst(ticker = "TCH"):
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
                     xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
-                    yaxis_gridcolor='gray')  # Màu của đường kẻ ngang đồ
+                    yaxis_gridcolor='gray',
+                    legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="right",
+                    x=1))# Màu của đường kẻ ngang đồ
     plot_rsi = fig_rsi.to_html(full_html=False)
     
     cur.execute("SELECT DISTINCT ticker FROM d1")
     stock_codes = [code[0] for code in cur.fetchall()]
 
     return render_template("/chart/analyst/analyst.html", plot_bb=plot_bb, plot_ma = plot_ma, plot_macd = plot_macd, plot_stoch = plot_stoch, plot_rsi = plot_rsi, ticker=ticker, stock_codes=stock_codes)
-    
 
-    return render_template("/chart/d1/cand_bb.html", plot=plot_html)
 if __name__ == "__main__":
     app.run()
