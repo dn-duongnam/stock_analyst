@@ -48,13 +48,18 @@
                     <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
                         <div class="menu_section">
                             <ul class="nav side-menu">
-                                <li><a href="/cand/d1/TCH"><i class="fa fa-home"></i> Trang chủ <span class="fa fa-chevron-down"></span></a>
-                                  
-                                </li>
-                           
-                                <li><a  href="/analyst/d1/TCH"><i class="fa fa-bar-chart-o"></i> Phân tích kỹ thuật <span
+                                <li><a href="/cand/d1/TCH"><i class="fa fa-home"></i> Trang chủ <span
                                             class="fa fa-chevron-down"></span></a>
-                                  
+
+                                </li>
+
+                                <li><a><i class="fa fa-bar-chart-o"></i> Phân tích kỹ thuật <span
+                                            class="fa fa-chevron-down"></span></a>
+                                    <ul class="nav child_menu">
+                                        <li><a href="/analyst/d1/TCH">Chart 1</a></li>
+                                        <li><a href="/mcdx/m1/TCH">Chart 2</a></li>
+
+                                    </ul>
                                 </li>
                             </ul>
                         </div>
@@ -92,7 +97,7 @@
                             <li class="nav-item dropdown open" style="padding-left: 15px;">
                                 <a href="javascript:;" class="user-profile dropdown-toggle" aria-haspopup="true"
                                     id="navbarDropdown" data-toggle="dropdown" aria-expanded="false">
-                                  Dương Nam
+                                    Dương Nam
                                 </a>
                             </li>
 
@@ -116,7 +121,7 @@
                             <div class="count">{{ close_price }}</div>
                         </div>
                         <div class="col-md-3 col-sm-3  tile_stats_count">
-                            <span class="count_top"><i class="fa fa-usd"></i> Giá cao nhấts</span>
+                            <span class="count_top"><i class="fa fa-usd"></i> Giá cao nhất</span>
                             <div class="count">{{ high_price }}</div>
                         </div>
                         <div class="col-md-3 col-sm-3  tile_stats_count">
@@ -842,15 +847,6 @@
                             </div>
                         </div>
                         <!-- /page content -->
-
-                        <!-- footer content -->
-                        <footer>
-                            <div class="pull-right">
-                                Gentelella - Bootstrap Admin Template by <a href="https://colorlib.com">Colorlib</a>
-                            </div>
-                            <div class="clearfix"></div>
-                        </footer>
-                        <!-- /footer content -->
                     </div>
                 </div>
                 <script>

@@ -90,7 +90,7 @@ def create_cand_chart(timeframe="d1", ticker="TCH"):
     stock_codes = [code[0] for code in cur.fetchall()]
 
     return render_template("/chart/cand/cand.html", plot_cand=plot_html, ticker=ticker, stock_codes=stock_codes, selected_timeframe=timeframe, open_price=open_price, close_price=close_price, high_price=high_price, low_price=low_price, volume=volume)
-@app.route("/")
+# @app.route("/")
 @app.route("/analyst/d1/<ticker>", methods=['GET', 'POST'])
 def analyst(ticker = "TCH"):
     cur = mysql.connection.cursor()
@@ -323,5 +323,55 @@ def analyst(ticker = "TCH"):
 
     return render_template("/chart/analyst/analyst.html", plot_bb=plot_bb, plot_ma = plot_ma, plot_macd = plot_macd, plot_stoch = plot_stoch, plot_rsi = plot_rsi, ticker=ticker, stock_codes=stock_codes)
 
+@app.route("/")
+@app.route('/mcdx/<timeframe>/<ticker>', methods=['GET', 'POST'])
+def create_mcdx_chart(timeframe="m15", ticker="TCH"):
+    cur = mysql.connection.cursor()
+
+    if timeframe == "m1":
+        table_name = "m1_intraday_table"
+    elif timeframe == "m15":
+        table_name = "m15_intraday_table"
+    elif timeframe == "m30":
+        table_name = "m30_intraday_table"
+    elif timeframe == "h1":
+        table_name = "h1_intraday_table"
+    elif timeframe == "d1":
+        table_name = "d1_intraday_table"
+    else:
+        return "Khung giờ không hợp lệ"
+
+
+    cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s", (ticker,))
+    records = cur.fetchall()
+
+    columnName = ['ticker', 'time_stamp', 'percent_sheep_buy', 'percent_shark_sell', 'percent_shark_buy', 'percent_wolf_sell', 'percent_wolf_buy', 'percent_sheep_sell', "avg_price", "sum_vol", "order_count"]
+    df = pd.DataFrame.from_records(records, columns=columnName)
+    df['time_stamp'] = pd.to_datetime(df['time_stamp'], unit='s')
+    df['time'] = df['time_stamp'].dt.tz_localize('UTC')
+
+    df["Sharks"] = (df["percent_shark_sell"] + df["percent_shark_buy"]) * 20
+    df["Wolfs"] = (df["percent_wolf_sell"] + df["percent_wolf_buy"]) * 20
+    df["Sheeps"] = (df["percent_sheep_sell"] + df["percent_sheep_buy"]) * 20
+
+
+    df['5_day_sma'] = df['Sharks'].rolling(window=5).mean()
+
+    # Tạo biểu đồ cột thanh miền
+    fig = px.bar(df, x='time', y=["Sharks", "Wolfs", "Sheeps"],
+                labels={'variable': 'Class', 'value': 'Value'},
+                title='Biểu đồ cột thanh miền',
+                barmode='relative',
+                color_discrete_sequence=['#ef5350','#fdff06', '#42ad39'])
+    fig.add_trace(go.Scatter(x=df['time'], y=df['5_day_sma'], mode='lines', name='MA(5)', line=dict(color='#2196f3',  width = 3)))
+    fig.update_xaxes(type='category',
+                    showticklabels=False)
+
+    plot_html = fig.to_html(full_html=False)
+
+    cur.execute("SELECT DISTINCT ticker FROM d1")
+    stock_codes = [code[0] for code in cur.fetchall()]
+
+    return render_template("/chart/analyst/mcdx.html", plot_mcdx=plot_html, ticker=ticker, stock_codes=stock_codes, selected_timeframe=timeframe)
 if __name__ == "__main__":
     app.run()
