@@ -326,7 +326,7 @@ def analyst(ticker = "TCH"):
     return render_template("/chart/analyst/analyst.html", plot_bb=plot_bb, plot_ma = plot_ma, plot_macd = plot_macd, plot_stoch = plot_stoch, plot_rsi = plot_rsi, ticker=ticker, stock_codes=stock_codes)
 
 # @app.route("/")
-@app.route('/mcdx/<timeframe>/<ticker>', methods=['GET', 'POST'])
+@app.route('/analyst/mcdx/<timeframe>/<ticker>', methods=['GET', 'POST'])
 def create_mcdx_chart(timeframe="m15", ticker="TCH"):
     cur = mysql.connection.cursor()
 
@@ -334,8 +334,6 @@ def create_mcdx_chart(timeframe="m15", ticker="TCH"):
         table_name = "m1_intraday_table"
     elif timeframe == "m15":
         table_name = "m15_intraday_table"
-    elif timeframe == "m30":
-        table_name = "m30_intraday_table"
     elif timeframe == "h1":
         table_name = "h1_intraday_table"
     elif timeframe == "d1":
