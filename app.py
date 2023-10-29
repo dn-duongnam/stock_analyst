@@ -334,8 +334,6 @@ def create_mcdx_chart(timeframe="m15", ticker="TCH"):
         table_name = "m1_intraday_table"
     elif timeframe == "m15":
         table_name = "m15_intraday_table"
-    elif timeframe == "m30":
-        table_name = "m30_intraday_table"
     elif timeframe == "h1":
         table_name = "h1_intraday_table"
     elif timeframe == "d1":
