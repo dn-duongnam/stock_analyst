@@ -11,6 +11,8 @@ import plotly.figure_factory as ff
 import pandas as pd
 from plotly.subplots import make_subplots
 
+import numpy as np
+import pandas as pd
 
 app = Flask(__name__)
 app.secret_key = 'Duong Nam'
@@ -323,7 +325,7 @@ def analyst(ticker = "TCH"):
 
     return render_template("/chart/analyst/analyst.html", plot_bb=plot_bb, plot_ma = plot_ma, plot_macd = plot_macd, plot_stoch = plot_stoch, plot_rsi = plot_rsi, ticker=ticker, stock_codes=stock_codes)
 
-@app.route("/")
+# @app.route("/")
 @app.route('/mcdx/<timeframe>/<ticker>', methods=['GET', 'POST'])
 def create_mcdx_chart(timeframe="m15", ticker="TCH"):
     cur = mysql.connection.cursor()
@@ -373,5 +375,114 @@ def create_mcdx_chart(timeframe="m15", ticker="TCH"):
     stock_codes = [code[0] for code in cur.fetchall()]
 
     return render_template("/chart/analyst/mcdx.html", plot_mcdx=plot_html, ticker=ticker, stock_codes=stock_codes, selected_timeframe=timeframe)
+
+@app.route("/")
+@app.route('/analyst/<timeframe>', methods=['GET', 'POST'])
+def create_treemap(timeframe="daylyArray"):
+    cur = mysql.connection.cursor()
+    cur.execute("""
+    SELECT DISTINCT d1.time_stamp FROM d1;
+    """)
+    records = cur.fetchall()
+    columnName = ['timestamp']
+    timestamp_table = pd.DataFrame.from_records(records, columns=columnName)['timestamp'].values
+    timestamp_table = np.sort(timestamp_table)
+
+    # #day
+    # daylyArray = timestamp_table[-2:]
+    # #week
+    # weekArray = timestamp_table[-8:]
+    # #month
+    # monthArray = timestamp_table[-31:]
+
+    if timeframe == "daylyArray":
+        selected_timeframe = timestamp_table[-2:]
+    elif timeframe == "weekArray":
+        selected_timeframe = timestamp_table[-8:]
+    elif timeframe == "monthArray":
+        selected_timeframe = timestamp_table[-31:]
+    else:
+        return "Khung giờ không hợp lệ"
+    if request.method == 'POST':
+        selected_timeframe = request.form.get('timeframe')
+        if selected_timeframe == "daylyArray":
+            return redirect('/analyst/daylyArray')
+        elif selected_timeframe == "weekArray":
+            return redirect('/analyst/weekArray')
+        elif selected_timeframe == "monthArray":
+            return redirect('/analyst/monthArray')
+        else:
+            return "Khung giờ không hợp lệ"
+    cur.execute("""SELECT * 
+    FROM d1
+    WHERE d1.time_stamp = %s;
+    """, (int(selected_timeframe[0]),))
+    records = cur.fetchall()
+    columnName = ['ticker', 'time_stamp_pr', 'open_pr', 'low_pr', 'high_pr', 'close_pr', 'volume_pr', 'sum_price_pr']
+    df_price_previous = pd.DataFrame.from_records(records, columns=columnName)
+    
+    #target
+    # Truy vấn dữ liệu từ SQL
+    cur.execute("""SELECT * 
+    FROM d1
+    WHERE d1.time_stamp = %s;
+    """, (int(selected_timeframe[-1]),))
+    records = cur.fetchall()
+    columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'sum_price']
+    df_price = pd.DataFrame.from_records(records, columns=columnName)
+    df_price = df_price.set_index('ticker').join(df_price_previous.set_index('ticker'), on='ticker', validate='1:1').reset_index()
+    df_price = df_price[['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'close_pr']]
+    #append infomation
+    cur.execute("""SELECT ct.ticker, ct.comGroupCode, ct.organName, ct.organShortName, it.industry_name 
+    FROM company_table ct
+    JOIN company_subgroup cs ON ct.ticker = cs.id_company
+    JOIN group_subgroup gs ON gs.id_subgroup = cs.id_subgroup
+    JOIN industry_group ig ON ig.id_group = gs.id_group
+    JOIN industry_table it ON it.id_industry = ig.id_industry
+    """)
+    records = cur.fetchall()
+    columnName = ['ticker', 'comGroupCode', 'organName', 'organShortName', 'industry_name']
+    df = pd.DataFrame.from_records(records, columns=columnName)
+
+    data_result = df_price.set_index('ticker').join(df.set_index('ticker'), on='ticker', validate='1:1').reset_index()
+    data_result['percent'] = pd.to_numeric((data_result['close'] - data_result['close_pr'])/data_result['close_pr'])
+    data_result = data_result.fillna(0)
+    def checkTypeUpdown(x):
+        if x == 0:
+            return '0'
+        if x < 0:
+            return '-1'
+        return '1'
+    data_result['type'] = data_result['percent'].apply(checkTypeUpdown)
+
+    fig = px.treemap(data_result, 
+                    path=['industry_name','ticker'],
+                    values='volume',
+                    labels='ticker',
+                    color='type',
+                    color_discrete_map={'0':'#cd8e1e', '1':'#04c584', '2':'#bc6dd0', '-1':'#d0303d', '-2':'#5499d0','(?)':'#333333'},
+                    hover_data=['percent','organName'],
+                    )
+
+    fig.data[0].customdata[:,0] = np.where(fig.data[0].customdata[:,0] != '(?)', fig.data[0].customdata[:,0]*100, '(?)')
+    fig.data[0].texttemplate = "%{label}<br>%{customdata[0]:.2f}%"
+
+    plot = fig.to_html(full_html=False)
+    
+    fig_vn30 = px.treemap(data_result, path=['comGroupCode','ticker'],
+                 color='type',
+                 color_discrete_map={'0':'#cd8e1e', '1':'#04c584', '2':'#bc6dd0', '-1':'#d0303d', '-2':'#5499d0','(?)':'#333333'},
+                 hover_data=['percent','organName'],
+                 values='volume',
+                #  width=2000,
+                #  height=1000
+                 )
+    fig_vn30.data[0].customdata[:,0] = np.where(fig_vn30.data[0].customdata[:,0] != '(?)', fig_vn30.data[0].customdata[:,0]*100, '(?)')
+    fig_vn30.data[0].texttemplate = "%{label}<br>%{customdata[0]:.2f}%"
+    
+    plot_vn30 = fig_vn30.to_html(full_html=False)
+    return render_template("/chart/analyst/treemap.html", treemap=plot, plot_vn30 = plot_vn30,selected_timeframe=timeframe)
+    
+    
 if __name__ == "__main__":
     app.run()
