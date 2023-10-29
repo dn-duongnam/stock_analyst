@@ -326,7 +326,7 @@ def analyst(ticker = "TCH"):
     return render_template("/chart/analyst/analyst.html", plot_bb=plot_bb, plot_ma = plot_ma, plot_macd = plot_macd, plot_stoch = plot_stoch, plot_rsi = plot_rsi, ticker=ticker, stock_codes=stock_codes)
 
 # @app.route("/")
-@app.route('/mcdx/<timeframe>/<ticker>', methods=['GET', 'POST'])
+@app.route('/analyst/mcdx/<timeframe>/<ticker>', methods=['GET', 'POST'])
 def create_mcdx_chart(timeframe="m15", ticker="TCH"):
     cur = mysql.connection.cursor()
 
@@ -434,11 +434,11 @@ def create_treemap(timeframe="daylyArray"):
     df_price = df_price[['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'close_pr']]
     #append infomation
     cur.execute("""SELECT ct.ticker, ct.comGroupCode, ct.organName, ct.organShortName, it.industry_name 
-    FROM company_table ct
+    FROM company ct
     JOIN company_subgroup cs ON ct.ticker = cs.id_company
     JOIN group_subgroup gs ON gs.id_subgroup = cs.id_subgroup
     JOIN industry_group ig ON ig.id_group = gs.id_group
-    JOIN industry_table it ON it.id_industry = ig.id_industry
+    JOIN industry it ON it.id_industry = ig.id_industry
     """)
     records = cur.fetchall()
     columnName = ['ticker', 'comGroupCode', 'organName', 'organShortName', 'industry_name']
@@ -447,12 +447,18 @@ def create_treemap(timeframe="daylyArray"):
     data_result = df_price.set_index('ticker').join(df.set_index('ticker'), on='ticker', validate='1:1').reset_index()
     data_result['percent'] = pd.to_numeric((data_result['close'] - data_result['close_pr'])/data_result['close_pr'])
     data_result = data_result.fillna(0)
+    
     def checkTypeUpdown(x):
         if x == 0:
             return '0'
         if x < 0:
+            if x <= -0.067 and timeframe == "daylyArray":
+                return '-2'
             return '-1'
+        if x >= 0.067 and timeframe == "daylyArray":
+            return '2'
         return '1'
+    
     data_result['type'] = data_result['percent'].apply(checkTypeUpdown)
 
     fig = px.treemap(data_result, 
