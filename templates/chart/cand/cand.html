@@ -1,914 +1,114 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <!-- Meta, title, CSS, favicons, etc. -->
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>Stock Analyst! | </title>
-
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='vendors/bootstrap/dist/css/bootstrap.min.css') }}">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='vendors/font-awesome/css/font-awesome.min.css') }}">
-    <!-- NProgress -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='vendors/nprogress/nprogress.css') }}">
-    <!-- bootstrap-progressbar -->
-    <link rel="stylesheet"
-        href="{{ url_for('static', filename='vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css') }}">
-    <!-- bootstrap-daterangepicker -->
-    <link rel="stylesheet"
-        href="{{ url_for('static', filename='vendors/bootstrap-daterangepicker/daterangepicker.css') }}">
-
-
-    <!-- Custom Theme Style -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='build/css/custom.min.css') }}">
-
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc0/dist/css/select2.min.css" rel="stylesheet" />
-</head>
-
-<body class="nav-md">
-    <div class="container body">
-        <div class="main_container">
-            <div class="col-md-3 left_col">
-                <div class="left_col scroll-view">
-                    <div class="navbar nav_title" style="border: 0;">
-                        <a href="" class="site_title"><i class="fa fa-line-chart"></i> <span>Stock Analyst!</span></a>
-                    </div>
-
-                    <div class="clearfix"></div>
-                    <!-- /menu profile quick info -->
-
-                    <br />
-
-                    <!-- sidebar menu -->
-                    <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
-                        <div class="menu_section">
-                            <ul class="nav side-menu">
-                                <li><a href="/cand/d1/TCH"><i class="fa fa-home"></i> Trang chủ <span
-                                            class="fa fa-chevron-down"></span></a>
-
-                                </li>
-
-                                <li><a><i class="fa fa-bar-chart-o"></i> Phân tích kỹ thuật <span
-                                            class="fa fa-chevron-down"></span></a>
-                                    <ul class="nav child_menu">
-                                        <li><a href="/analyst/d1/TCH">Chart 1</a></li>
-                                        <li><a href="/mcdx/m1/TCH">Chart 2</a></li>
-                                        <li><a href="/analyst/daylyArray">Bản đồ nhiệt</a></li>
-
-                                    </ul>
-                                </li>
-                            </ul>
-                        </div>
-
-                    </div>
-                    <!-- /sidebar menu -->
-
-                    <!-- /menu footer buttons -->
-                    <div class="sidebar-footer hidden-small">
-                        <a data-toggle="tooltip" data-placement="top" title="Settings">
-                            <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
-                        </a>
-                        <a data-toggle="tooltip" data-placement="top" title="FullScreen">
-                            <span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span>
-                        </a>
-                        <a data-toggle="tooltip" data-placement="top" title="Lock">
-                            <span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span>
-                        </a>
-                        <a data-toggle="tooltip" data-placement="top" title="Logout" href="login.html">
-                            <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
-                        </a>
-                    </div>
-                    <!-- /menu footer buttons -->
-                </div>
+{% extends "base.html" %}
+{% block title %} Biểu đồ nến {% endblock title %}
+{% block content %}
+<!-- page content -->
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <div class="row" style="display: inline-block;">
+        <div class="tile_count">
+            <div class="col-md-3 col-sm-3  tile_stats_count">
+                <span class="count_top"><i class="fa fa-usd"></i> Giá mở cửa</span>
+                <div class="count">{{ open_price }}</div>
             </div>
-
-            <!-- top navigation -->
-            <div class="top_nav">
-                <div class="nav_menu">
-                    <div class="nav toggle">
-                        <a id="menu_toggle"><i class="fa fa-bars"></i></a>
-                    </div>
-                    <nav class="nav navbar-nav">
-                        <ul class=" navbar-right">
-                            <li class="nav-item dropdown open" style="padding-left: 15px;">
-                                <a href="javascript:;" class="user-profile dropdown-toggle" aria-haspopup="true"
-                                    id="navbarDropdown" data-toggle="dropdown" aria-expanded="false">
-                                    Dương Nam
-                                </a>
-                            </li>
-
-                        </ul>
-                    </nav>
-                </div>
+            <div class="col-md-3 col-sm-3  tile_stats_count">
+                <span class="count_top"><i class="fa fa-usd"></i> Giá đóng cửa</span>
+                <div class="count">{{ close_price }}</div>
             </div>
-            <!-- /top navigation -->
+            <div class="col-md-3 col-sm-3  tile_stats_count">
+                <span class="count_top"><i class="fa fa-usd"></i> Giá cao nhất</span>
+                <div class="count">{{ high_price }}</div>
+            </div>
+            <div class="col-md-3 col-sm-3  tile_stats_count">
+                <span class="count_top"><i class="fa fa-usd"></i> Giá thấp nhất</span>
+                <div class="count">{{ low_price }}</div>
+            </div>
+            <div class="col-md-3 col-sm-3  tile_stats_count">
+                <span class="count_top"><i class="fa fa-bars"></i> Khối lượng giao dịch</span>
+                <div class="count">{{ volume }}</div>
+            </div>
+        </div>
+    </div>
+    <!-- /top tiles -->
 
-            <!-- page content -->
-            <div class="right_col" role="main">
-                <!-- top tiles -->
-                <div class="row" style="display: inline-block;">
-                    <div class="tile_count">
-                        <div class="col-md-3 col-sm-3  tile_stats_count">
-                            <span class="count_top"><i class="fa fa-usd"></i> Giá mở cửa</span>
-                            <div class="count">{{ open_price }}</div>
-                        </div>
-                        <div class="col-md-3 col-sm-3  tile_stats_count">
-                            <span class="count_top"><i class="fa fa-usd"></i> Giá đóng cửa</span>
-                            <div class="count">{{ close_price }}</div>
-                        </div>
-                        <div class="col-md-3 col-sm-3  tile_stats_count">
-                            <span class="count_top"><i class="fa fa-usd"></i> Giá cao nhất</span>
-                            <div class="count">{{ high_price }}</div>
-                        </div>
-                        <div class="col-md-3 col-sm-3  tile_stats_count">
-                            <span class="count_top"><i class="fa fa-usd"></i> Giá thấp nhất</span>
-                            <div class="count">{{ low_price }}</div>
-                        </div>
-                        <div class="col-md-3 col-sm-3  tile_stats_count">
-                            <span class="count_top"><i class="fa fa-bars"></i> Khối lượng giao dịch</span>
-                            <div class="count">{{ volume }}</div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 ">
+            <div class="dashboard_graph">
+
+                <div class="row x_title">
+                    <div class="col-md-6">
+                        <h3>Candlestick Chart for {{ ticker }}</h3>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="reportrange" class="pull-right"
+                            style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
+                            <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
+                            <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
                         </div>
                     </div>
                 </div>
-                <!-- /top tiles -->
 
-                <div class="row">
-                    <div class="col-md-12 col-sm-12 ">
-                        <div class="dashboard_graph">
+                <div class="col-md-12 col-sm-12 ">
+                    <div>
+                        <label for="ticker"
+                            style="font-weight: bold; display: inline-block; width: 120px; text-align: right;">Chọn
+                            mã cổ phiếu:</label>
+                        <select id="ticker" name="ticker" class="select2" style="width: 150px;">
+                            <option value="">-- Chọn mã cổ phiếu --</option>
+                            {% for code in stock_codes %}
+                            <option value="{{ code }}" {% if code==ticker %}selected{% endif %}>{{ code }}
+                            </option>
+                            {% endfor %}
+                        </select>
 
-                            <div class="row x_title">
-                                <div class="col-md-6">
-                                    <h3>Candlestick Chart for {{ ticker }}</h3>
-                                </div>
-                                <div class="col-md-6">
-                                    <div id="reportrange" class="pull-right"
-                                        style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
-                                        <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
-                                        <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
-                                    </div>
-                                </div>
-                            </div>
+                        <label for="timeframe"
+                            style="font-weight: bold; display: inline-block; width: 120px; text-align: right;">Chọn
+                            khung giờ:</label>
+                        <select id="timeframe" name="timeframe" style="width: 150px;">
+                            <option value="m1" {% if selected_timeframe=="m1" %}selected{% endif %}>M1
+                            </option>
+                            <option value="m15" {% if selected_timeframe=="m15" %}selected{% endif %}>M15
+                            </option>
+                            <option value="m30" {% if selected_timeframe=="m30" %}selected{% endif %}>M30
+                            </option>
+                            <option value="h1" {% if selected_timeframe=="h1" %}selected{% endif %}>H1
+                            </option>
+                            <option value="d1" {% if selected_timeframe=="d1" %}selected{% endif %}>D1
+                            </option>
+                        </select>
 
-                            <div class="col-md-12 col-sm-12 ">
-                                <div>
-                                    <label for="ticker"
-                                        style="font-weight: bold; display: inline-block; width: 120px; text-align: right;">Chọn
-                                        mã cổ phiếu:</label>
-                                    <select id="ticker" name="ticker" class="select2" style="width: 150px;">
-                                        <option value="">-- Chọn mã cổ phiếu --</option>
-                                        {% for code in stock_codes %}
-                                        <option value="{{ code }}" {% if code==ticker %}selected{% endif %}>{{ code }}
-                                        </option>
-                                        {% endfor %}
-                                    </select>
+                        <button
+                            style="background-color: #007bff; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-left: 20px;"
+                            onclick="updateChart()">Cập nhật biểu đồ</button>
 
-                                    <label for="timeframe"
-                                        style="font-weight: bold; display: inline-block; width: 120px; text-align: right;">Chọn
-                                        khung giờ:</label>
-                                    <select id="timeframe" name="timeframe" style="width: 150px;">
-                                        <option value="m1" {% if selected_timeframe=="m1" %}selected{% endif %}>M1
-                                        </option>
-                                        <option value="m15" {% if selected_timeframe=="m15" %}selected{% endif %}>M15
-                                        </option>
-                                        <option value="m30" {% if selected_timeframe=="m30" %}selected{% endif %}>M30
-                                        </option>
-                                        <option value="h1" {% if selected_timeframe=="h1" %}selected{% endif %}>H1
-                                        </option>
-                                        <option value="d1" {% if selected_timeframe=="d1" %}selected{% endif %}>D1
-                                        </option>
-                                    </select>
-
-                                    <button
-                                        style="background-color: #007bff; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-left: 20px;"
-                                        onclick="updateChart()">Cập nhật biểu đồ</button>
-
-                                    <div style="margin-top: 20px; border: 1px solid #ccc; padding: 20px; border-radius: 5px; transition: transform 0.2s;"
-                                        onmouseover="this.style.transform='scale(1.02)';"
-                                        onmouseout="this.style.transform='scale(1)';">
-                                        {{ plot_cand | safe }}
-                                    </div>
-
-
-                                </div>
-                            </div>
-
-                            <div class="row">
-
-
-                                <div class="col-md-4 col-sm-4 ">
-                                    <div class="x_panel tile fixed_height_320">
-                                        <div class="x_title">
-                                            <h2>App Versions</h2>
-                                            <ul class="nav navbar-right panel_toolbox">
-                                                <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
-                                                </li>
-                                                <li class="dropdown">
-                                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"
-                                                        role="button" aria-expanded="false"><i
-                                                            class="fa fa-wrench"></i></a>
-                                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                                        <a class="dropdown-item" href="#">Settings 1</a>
-                                                        <a class="dropdown-item" href="#">Settings 2</a>
-                                                    </div>
-                                                </li>
-                                                <li><a class="close-link"><i class="fa fa-close"></i></a>
-                                                </li>
-                                            </ul>
-                                            <div class="clearfix"></div>
-                                        </div>
-                                        <div class="x_content">
-                                            <h4>App Usage across versions</h4>
-                                            <div class="widget_summary">
-                                                <div class="w_left w_25">
-                                                    <span>0.1.5.2</span>
-                                                </div>
-                                                <div class="w_center w_55">
-                                                    <div class="progress">
-                                                        <div class="progress-bar bg-green" role="progressbar"
-                                                            aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
-                                                            style="width: 66%;">
-                                                            <span class="sr-only">60% Complete</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="w_right w_20">
-                                                    <span>123k</span>
-                                                </div>
-                                                <div class="clearfix"></div>
-                                            </div>
-
-                                            <div class="widget_summary">
-                                                <div class="w_left w_25">
-                                                    <span>0.1.5.3</span>
-                                                </div>
-                                                <div class="w_center w_55">
-                                                    <div class="progress">
-                                                        <div class="progress-bar bg-green" role="progressbar"
-                                                            aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
-                                                            style="width: 45%;">
-                                                            <span class="sr-only">60% Complete</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="w_right w_20">
-                                                    <span>53k</span>
-                                                </div>
-                                                <div class="clearfix"></div>
-                                            </div>
-                                            <div class="widget_summary">
-                                                <div class="w_left w_25">
-                                                    <span>0.1.5.4</span>
-                                                </div>
-                                                <div class="w_center w_55">
-                                                    <div class="progress">
-                                                        <div class="progress-bar bg-green" role="progressbar"
-                                                            aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
-                                                            style="width: 25%;">
-                                                            <span class="sr-only">60% Complete</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="w_right w_20">
-                                                    <span>23k</span>
-                                                </div>
-                                                <div class="clearfix"></div>
-                                            </div>
-                                            <div class="widget_summary">
-                                                <div class="w_left w_25">
-                                                    <span>0.1.5.5</span>
-                                                </div>
-                                                <div class="w_center w_55">
-                                                    <div class="progress">
-                                                        <div class="progress-bar bg-green" role="progressbar"
-                                                            aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
-                                                            style="width: 5%;">
-                                                            <span class="sr-only">60% Complete</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="w_right w_20">
-                                                    <span>3k</span>
-                                                </div>
-                                                <div class="clearfix"></div>
-                                            </div>
-                                            <div class="widget_summary">
-                                                <div class="w_left w_25">
-                                                    <span>0.1.5.6</span>
-                                                </div>
-                                                <div class="w_center w_55">
-                                                    <div class="progress">
-                                                        <div class="progress-bar bg-green" role="progressbar"
-                                                            aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
-                                                            style="width: 2%;">
-                                                            <span class="sr-only">60% Complete</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="w_right w_20">
-                                                    <span>1k</span>
-                                                </div>
-                                                <div class="clearfix"></div>
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-4 col-sm-4 ">
-                                    <div class="x_panel tile fixed_height_320 overflow_hidden">
-                                        <div class="x_title">
-                                            <h2>Device Usage</h2>
-                                            <ul class="nav navbar-right panel_toolbox">
-                                                <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
-                                                </li>
-                                                <li class="dropdown">
-                                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"
-                                                        role="button" aria-expanded="false"><i
-                                                            class="fa fa-wrench"></i></a>
-                                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                                        <a class="dropdown-item" href="#">Settings 1</a>
-                                                        <a class="dropdown-item" href="#">Settings 2</a>
-                                                    </div>
-                                                </li>
-                                                <li><a class="close-link"><i class="fa fa-close"></i></a>
-                                                </li>
-                                            </ul>
-                                            <div class="clearfix"></div>
-                                        </div>
-                                        <div class="x_content">
-                                            <table class="" style="width:100%">
-                                                <tr>
-                                                    <th style="width:37%;">
-                                                        <p>Top 5</p>
-                                                    </th>
-                                                    <th>
-                                                        <div class="col-lg-7 col-md-7 col-sm-7 ">
-                                                            <p class="">Device</p>
-                                                        </div>
-                                                        <div class="col-lg-5 col-md-5 col-sm-5 ">
-                                                            <p class="">Progress</p>
-                                                        </div>
-                                                    </th>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <canvas class="canvasDoughnut" height="140" width="140"
-                                                            style="margin: 15px 10px 10px 0"></canvas>
-                                                    </td>
-                                                    <td>
-                                                        <table class="tile_info">
-                                                            <tr>
-                                                                <td>
-                                                                    <p><i class="fa fa-square blue"></i>IOS </p>
-                                                                </td>
-                                                                <td>30%</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>
-                                                                    <p><i class="fa fa-square green"></i>Android
-                                                                    </p>
-                                                                </td>
-                                                                <td>10%</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>
-                                                                    <p><i class="fa fa-square purple"></i>Blackberry
-                                                                    </p>
-                                                                </td>
-                                                                <td>20%</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>
-                                                                    <p><i class="fa fa-square aero"></i>Symbian </p>
-                                                                </td>
-                                                                <td>15%</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>
-                                                                    <p><i class="fa fa-square red"></i>Others </p>
-                                                                </td>
-                                                                <td>30%</td>
-                                                            </tr>
-                                                        </table>
-                                                    </td>
-                                                </tr>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-
-
-                                <div class="col-md-4 col-sm-4 ">
-                                    <div class="x_panel tile fixed_height_320">
-                                        <div class="x_title">
-                                            <h2>Quick Settings</h2>
-                                            <ul class="nav navbar-right panel_toolbox">
-                                                <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
-                                                </li>
-                                                <li class="dropdown">
-                                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"
-                                                        role="button" aria-expanded="false"><i
-                                                            class="fa fa-wrench"></i></a>
-                                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                                        <a class="dropdown-item" href="#">Settings 1</a>
-                                                        <a class="dropdown-item" href="#">Settings 2</a>
-                                                    </div>
-                                                </li>
-                                                <li><a class="close-link"><i class="fa fa-close"></i></a>
-                                                </li>
-                                            </ul>
-                                            <div class="clearfix"></div>
-                                        </div>
-                                        <div class="x_content">
-                                            <div class="dashboard-widget-content">
-                                                <ul class="quick-list">
-                                                    <li><i class="fa fa-calendar-o"></i><a href="#">Settings</a>
-                                                    </li>
-                                                    <li><i class="fa fa-bars"></i><a href="#">Subscription</a>
-                                                    </li>
-                                                    <li><i class="fa fa-bar-chart"></i><a href="#">Auto Renewal</a>
-                                                    </li>
-                                                    <li><i class="fa fa-line-chart"></i><a href="#">Achievements</a>
-                                                    </li>
-                                                    <li><i class="fa fa-bar-chart"></i><a href="#">Auto Renewal</a>
-                                                    </li>
-                                                    <li><i class="fa fa-line-chart"></i><a href="#">Achievements</a>
-                                                    </li>
-                                                    <li><i class="fa fa-area-chart"></i><a href="#">Logout</a>
-                                                    </li>
-                                                </ul>
-
-                                                <div class="sidebar-widget">
-                                                    <h4>Profile Completion</h4>
-                                                    <canvas width="150" height="80" id="chart_gauge_01" class=""
-                                                        style="width: 160px; height: 100px;"></canvas>
-                                                    <div class="goal-wrapper">
-                                                        <span id="gauge-text" class="gauge-value pull-left">0</span>
-                                                        <span class="gauge-value pull-left">%</span>
-                                                        <span id="goal-text" class="goal-value pull-right">100%</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-
-
-                            <div class="row">
-                                <div class="col-md-4 col-sm-4 ">
-                                    <div class="x_panel">
-                                        <div class="x_title">
-                                            <h2>Recent Activities <small>Sessions</small></h2>
-                                            <ul class="nav navbar-right panel_toolbox">
-                                                <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
-                                                </li>
-                                                <li class="dropdown">
-                                                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"
-                                                        role="button" aria-expanded="false"><i
-                                                            class="fa fa-wrench"></i></a>
-                                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                                        <a class="dropdown-item" href="#">Settings 1</a>
-                                                        <a class="dropdown-item" href="#">Settings 2</a>
-                                                    </div>
-                                                </li>
-                                                <li><a class="close-link"><i class="fa fa-close"></i></a>
-                                                </li>
-                                            </ul>
-                                            <div class="clearfix"></div>
-                                        </div>
-                                        <div class="x_content">
-                                            <div class="dashboard-widget-content">
-
-                                                <ul class="list-unstyled timeline widget">
-                                                    <li>
-                                                        <div class="block">
-                                                            <div class="block_content">
-                                                                <h2 class="title">
-                                                                    <a>Who Needs Sundance When You’ve
-                                                                        Got&nbsp;Crowdfunding?</a>
-                                                                </h2>
-                                                                <div class="byline">
-                                                                    <span>13 hours ago</span> by <a>Jane Smith</a>
-                                                                </div>
-                                                                <p class="excerpt">Film festivals used to be
-                                                                    do-or-die moments for movie makers. They were
-                                                                    where you met the producers that could fund your
-                                                                    project, and if the buyers liked your flick,
-                                                                    they’d pay to Fast-forward and…
-                                                                    <a>Read&nbsp;More</a>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                    <li>
-                                                        <div class="block">
-                                                            <div class="block_content">
-                                                                <h2 class="title">
-                                                                    <a>Who Needs Sundance When You’ve
-                                                                        Got&nbsp;Crowdfunding?</a>
-                                                                </h2>
-                                                                <div class="byline">
-                                                                    <span>13 hours ago</span> by <a>Jane Smith</a>
-                                                                </div>
-                                                                <p class="excerpt">Film festivals used to be
-                                                                    do-or-die moments for movie makers. They were
-                                                                    where you met the producers that could fund your
-                                                                    project, and if the buyers liked your flick,
-                                                                    they’d pay to Fast-forward and…
-                                                                    <a>Read&nbsp;More</a>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                    <li>
-                                                        <div class="block">
-                                                            <div class="block_content">
-                                                                <h2 class="title">
-                                                                    <a>Who Needs Sundance When You’ve
-                                                                        Got&nbsp;Crowdfunding?</a>
-                                                                </h2>
-                                                                <div class="byline">
-                                                                    <span>13 hours ago</span> by <a>Jane Smith</a>
-                                                                </div>
-                                                                <p class="excerpt">Film festivals used to be
-                                                                    do-or-die moments for movie makers. They were
-                                                                    where you met the producers that could fund your
-                                                                    project, and if the buyers liked your flick,
-                                                                    they’d pay to Fast-forward and…
-                                                                    <a>Read&nbsp;More</a>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                    <li>
-                                                        <div class="block">
-                                                            <div class="block_content">
-                                                                <h2 class="title">
-                                                                    <a>Who Needs Sundance When You’ve
-                                                                        Got&nbsp;Crowdfunding?</a>
-                                                                </h2>
-                                                                <div class="byline">
-                                                                    <span>13 hours ago</span> by <a>Jane Smith</a>
-                                                                </div>
-                                                                <p class="excerpt">Film festivals used to be
-                                                                    do-or-die moments for movie makers. They were
-                                                                    where you met the producers that could fund your
-                                                                    project, and if the buyers liked your flick,
-                                                                    they’d pay to Fast-forward and…
-                                                                    <a>Read&nbsp;More</a>
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-
-                                <div class="col-md-8 col-sm-8 ">
-
-
-
-                                    <div class="row">
-
-                                        <div class="col-md-12 col-sm-12 ">
-                                            <div class="x_panel">
-                                                <div class="x_title">
-                                                    <h2>Visitors location <small>geo-presentation</small></h2>
-                                                    <ul class="nav navbar-right panel_toolbox">
-                                                        <li><a class="collapse-link"><i
-                                                                    class="fa fa-chevron-up"></i></a>
-                                                        </li>
-                                                        <li class="dropdown">
-                                                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"
-                                                                role="button" aria-expanded="false"><i
-                                                                    class="fa fa-wrench"></i></a>
-                                                            <div class="dropdown-menu"
-                                                                aria-labelledby="dropdownMenuButton">
-                                                                <a class="dropdown-item" href="#">Settings 1</a>
-                                                                <a class="dropdown-item" href="#">Settings 2</a>
-                                                            </div>
-                                                        </li>
-                                                        <li><a class="close-link"><i class="fa fa-close"></i></a>
-                                                        </li>
-                                                    </ul>
-                                                    <div class="clearfix"></div>
-                                                </div>
-                                                <div class="x_content">
-                                                    <div class="dashboard-widget-content">
-                                                        <div class="col-md-4 hidden-small">
-                                                            <h2 class="line_30">125.7k Views from 60 countries</h2>
-
-                                                            <table class="countries_list">
-                                                                <tbody>
-                                                                    <tr>
-                                                                        <td>United States</td>
-                                                                        <td class="fs15 fw700 text-right">33%</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>France</td>
-                                                                        <td class="fs15 fw700 text-right">27%</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>Germany</td>
-                                                                        <td class="fs15 fw700 text-right">16%</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>Spain</td>
-                                                                        <td class="fs15 fw700 text-right">11%</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td>Britain</td>
-                                                                        <td class="fs15 fw700 text-right">10%</td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                        <div id="world-map-gdp" class="col-md-8 col-sm-12 "
-                                                            style="height:230px;"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                    <div class="row">
-
-
-                                        <!-- Start to do list -->
-                                        <div class="col-md-6 col-sm-6 ">
-                                            <div class="x_panel">
-                                                <div class="x_title">
-                                                    <h2>To Do List <small>Sample tasks</small></h2>
-                                                    <ul class="nav navbar-right panel_toolbox">
-                                                        <li><a class="collapse-link"><i
-                                                                    class="fa fa-chevron-up"></i></a>
-                                                        </li>
-                                                        <li class="dropdown">
-                                                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"
-                                                                role="button" aria-expanded="false"><i
-                                                                    class="fa fa-wrench"></i></a>
-                                                            <div class="dropdown-menu"
-                                                                aria-labelledby="dropdownMenuButton">
-                                                                <a class="dropdown-item" href="#">Settings 1</a>
-                                                                <a class="dropdown-item" href="#">Settings 2</a>
-                                                            </div>
-                                                        </li>
-                                                        <li><a class="close-link"><i class="fa fa-close"></i></a>
-                                                        </li>
-                                                    </ul>
-                                                    <div class="clearfix"></div>
-                                                </div>
-                                                <div class="x_content">
-
-                                                    <div class="">
-                                                        <ul class="to_do">
-                                                            <li>
-                                                                <p>
-                                                                    <input type="checkbox" class="flat"> Schedule
-                                                                    meeting with new client
-                                                                </p>
-                                                            </li>
-                                                            <li>
-                                                                <p>
-                                                                    <input type="checkbox" class="flat"> Create
-                                                                    email address for new intern
-                                                                </p>
-                                                            </li>
-                                                            <li>
-                                                                <p>
-                                                                    <input type="checkbox" class="flat"> Have IT fix
-                                                                    the network printer
-                                                                </p>
-                                                            </li>
-                                                            <li>
-                                                                <p>
-                                                                    <input type="checkbox" class="flat"> Copy
-                                                                    backups to offsite location
-                                                                </p>
-                                                            </li>
-                                                            <li>
-                                                                <p>
-                                                                    <input type="checkbox" class="flat"> Food truck
-                                                                    fixie locavors mcsweeney
-                                                                </p>
-                                                            </li>
-                                                            <li>
-                                                                <p>
-                                                                    <input type="checkbox" class="flat"> Food truck
-                                                                    fixie locavors mcsweeney
-                                                                </p>
-                                                            </li>
-                                                            <li>
-                                                                <p>
-                                                                    <input type="checkbox" class="flat"> Create
-                                                                    email address for new intern
-                                                                </p>
-                                                            </li>
-                                                            <li>
-                                                                <p>
-                                                                    <input type="checkbox" class="flat"> Have IT fix
-                                                                    the network printer
-                                                                </p>
-                                                            </li>
-                                                            <li>
-                                                                <p>
-                                                                    <input type="checkbox" class="flat"> Copy
-                                                                    backups to offsite location
-                                                                </p>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!-- End to do list -->
-
-                                        <!-- start of weather widget -->
-                                        <div class="col-md-6 col-sm-6 ">
-                                            <div class="x_panel">
-                                                <div class="x_title">
-                                                    <h2>Daily active users <small>Sessions</small></h2>
-                                                    <ul class="nav navbar-right panel_toolbox">
-                                                        <li><a class="collapse-link"><i
-                                                                    class="fa fa-chevron-up"></i></a>
-                                                        </li>
-                                                        <li class="dropdown">
-                                                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"
-                                                                role="button" aria-expanded="false"><i
-                                                                    class="fa fa-wrench"></i></a>
-                                                            <div class="dropdown-menu"
-                                                                aria-labelledby="dropdownMenuButton">
-                                                                <a class="dropdown-item" href="#">Settings 1</a>
-                                                                <a class="dropdown-item" href="#">Settings 2</a>
-                                                            </div>
-                                                        </li>
-                                                        <li><a class="close-link"><i class="fa fa-close"></i></a>
-                                                        </li>
-                                                    </ul>
-                                                    <div class="clearfix"></div>
-                                                </div>
-                                                <div class="x_content">
-                                                    <div class="row">
-                                                        <div class="col-sm-12">
-                                                            <div class="temperature"><b>Monday</b>, 07:30 AM
-                                                                <span>F</span>
-                                                                <span><b>C</b></span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="col-sm-4">
-                                                            <div class="weather-icon">
-                                                                <canvas height="84" width="84"
-                                                                    id="partly-cloudy-day"></canvas>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-sm-8">
-                                                            <div class="weather-text">
-                                                                <h2>Texas <br><i>Partly Cloudy Day</i></h2>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-sm-12">
-                                                        <div class="weather-text pull-right">
-                                                            <h3 class="degrees">23</h3>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="clearfix"></div>
-
-                                                    <div class="row weather-days">
-                                                        <div class="col-sm-2">
-                                                            <div class="daily-weather">
-                                                                <h2 class="day">Mon</h2>
-                                                                <h3 class="degrees">25</h3>
-                                                                <canvas id="clear-day" width="32" height="32"></canvas>
-                                                                <h5>15 <i>km/h</i></h5>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-sm-2">
-                                                            <div class="daily-weather">
-                                                                <h2 class="day">Tue</h2>
-                                                                <h3 class="degrees">25</h3>
-                                                                <canvas height="32" width="32" id="rain"></canvas>
-                                                                <h5>12 <i>km/h</i></h5>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-sm-2">
-                                                            <div class="daily-weather">
-                                                                <h2 class="day">Wed</h2>
-                                                                <h3 class="degrees">27</h3>
-                                                                <canvas height="32" width="32" id="snow"></canvas>
-                                                                <h5>14 <i>km/h</i></h5>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-sm-2">
-                                                            <div class="daily-weather">
-                                                                <h2 class="day">Thu</h2>
-                                                                <h3 class="degrees">28</h3>
-                                                                <canvas height="32" width="32" id="sleet"></canvas>
-                                                                <h5>15 <i>km/h</i></h5>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-sm-2">
-                                                            <div class="daily-weather">
-                                                                <h2 class="day">Fri</h2>
-                                                                <h3 class="degrees">28</h3>
-                                                                <canvas height="32" width="32" id="wind"></canvas>
-                                                                <h5>11 <i>km/h</i></h5>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-sm-2">
-                                                            <div class="daily-weather">
-                                                                <h2 class="day">Sat</h2>
-                                                                <h3 class="degrees">26</h3>
-                                                                <canvas height="32" width="32" id="cloudy"></canvas>
-                                                                <h5>10 <i>km/h</i></h5>
-                                                            </div>
-                                                        </div>
-                                                        <div class="clearfix"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                        <!-- end of weather widget -->
-                                    </div>
-                                </div>
-                            </div>
+                        <div style="margin-top: 20px; border: 1px solid #ccc; padding: 20px; border-radius: 5px; transition: transform 0.2s;"
+                            onmouseover="this.style.transform='scale(1.02)';"
+                            onmouseout="this.style.transform='scale(1)';">
+                            {{ plot_cand | safe }}
                         </div>
-                        <!-- /page content -->
+
+
                     </div>
                 </div>
-                <script>
-                    $(document).ready(function () {
-                        $('.select2').select2();
-                    });
 
-                    function updateChart() {
-                        var selectedTicker = document.getElementById("ticker").value;
-                        var selectedTimeframe = document.getElementById("timeframe").value;
-                        if (selectedTicker && selectedTimeframe) {
-                            location.href = "/cand/" + selectedTimeframe + "/" + selectedTicker;
-                        }
-                    }
-                </script>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $('.select2').select2();
+    });
+
+    function updateChart() {
+        var selectedTicker = document.getElementById("ticker").value;
+        var selectedTimeframe = document.getElementById("timeframe").value;
+        if (selectedTicker && selectedTimeframe) {
+            location.href = "/cand/" + selectedTimeframe + "/" + selectedTicker;
+        }
+    }
+</script>
 
 
-                <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc0/dist/js/select2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc0/dist/js/select2.min.js"></script>
 
-                <!-- jQuery -->
-                <script src="{{ url_for('static', filename='vendors/jquery/dist/jquery.min.js') }}"></script>
-                <!-- Bootstrap -->
-                <script
-                    src="{{ url_for('static', filename='vendors/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
-                <!-- FastClick -->
-                <script src="{{ url_for('static', filename='vendors/fastclick/lib/fastclick.js') }}"></script>
-                <!-- NProgress -->
-                <script src="{{ url_for('static', filename='vendors/nprogress/nprogress.js') }}"></script>
-                <!-- Chart.js -->
-                <script src="{{ url_for('static', filename='vendors/Chart.js/dist/Chart.min.js') }}"></script>
-                <!-- jQuery Sparklines -->
-                <script
-                    src="{{ url_for('static', filename='vendors/jquery-sparkline/dist/jquery.sparkline.min.js') }}"></script>
-                <!-- morris.js -->
-                <script src="{{ url_for('static', filename='vendors/raphael/raphael.min.js') }}"></script>
-                <script src="{{ url_for('static', filename='vendors/morris.js/morris.min.js') }}"></script>
-                <!-- gauge.js -->
-                <script src="{{ url_for('static', filename='vendors/gauge.js/dist/gauge.min.js') }}"></script>
-                <!-- bootstrap-progressbar -->
-                <script
-                    src="{{ url_for('static', filename='vendors/bootstrap-progressbar/bootstrap-progressbar.min.js') }}"></script>
-                <!-- Skycons -->
-                <script src="{{ url_for('static', filename='vendors/skycons/skycons.js') }}"></script>
-                <!-- Flot -->
-                <script src="{{ url_for('static', filename='vendors/Flot/jquery.flot.js') }}"></script>
-                <script src="{{ url_for('static', filename='vendors/Flot/jquery.flot.pie.js') }}"></script>
-                <script src="{{ url_for('static', filename='vendors/Flot/jquery.flot.time.js') }}"></script>
-                <script src="{{ url_for('static', filename='vendors/Flot/jquery.flot.stack.js') }}"></script>
-                <script src="{{ url_for('static', filename='vendors/Flot/jquery.flot.resize.js') }}"></script>
-                <!-- Flot plugins -->
-                <script
-                    src="{{ url_for('static', filename='vendors/flot.orderbars/js/jquery.flot.orderBars.js') }}"></script>
-                <script
-                    src="{{ url_for('static', filename='vendors/flot-spline/js/jquery.flot.spline.min.js') }}"></script>
-                <script src="{{ url_for('static', filename='vendors/flot.curvedlines/curvedLines.js') }}"></script>
-                <!-- DateJS -->
-                <script src="{{ url_for('static', filename='vendors/DateJS/build/date.js') }}"></script>
-                <!-- bootstrap-daterangepicker -->
-                <script src="{{ url_for('static', filename='vendors/moment/min/moment.min.js') }}"></script>
-                <script
-                    src="{{ url_for('static', filename='vendors/bootstrap-daterangepicker/daterangepicker.js') }}"></script>
-                <!-- Custom Theme Scripts -->
-                <script src="{{ url_for('static', filename='build/js/custom.min.js') }}"></script>
-</body>
+{% endblock %}

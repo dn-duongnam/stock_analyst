@@ -33,7 +33,7 @@ app.config['MYSQL_DATABASE_AUTH_PLUGIN'] = 'mysql_native_password'
 mysql = MySQL(app)
 
 #D1
-# @app.route("/")
+@app.route("/")
 @app.route('/cand/<timeframe>/<ticker>', methods=['GET', 'POST'])
 def create_cand_chart(timeframe="d1", ticker="TCH"):
     cur = mysql.connection.cursor()
@@ -325,8 +325,7 @@ def analyst(ticker = "TCH"):
 
     return render_template("/chart/analyst/analyst.html", plot_bb=plot_bb, plot_ma = plot_ma, plot_macd = plot_macd, plot_stoch = plot_stoch, plot_rsi = plot_rsi, ticker=ticker, stock_codes=stock_codes)
 
-# @app.route("/")
-@app.route('/analyst/mcdx/<timeframe>/<ticker>', methods=['GET', 'POST'])
+@app.route('/mcdx/<timeframe>/<ticker>', methods=['GET', 'POST'])
 def create_mcdx_chart(timeframe="m15", ticker="TCH"):
     cur = mysql.connection.cursor()
 
@@ -374,8 +373,7 @@ def create_mcdx_chart(timeframe="m15", ticker="TCH"):
 
     return render_template("/chart/analyst/mcdx.html", plot_mcdx=plot_html, ticker=ticker, stock_codes=stock_codes, selected_timeframe=timeframe)
 
-@app.route("/")
-@app.route('/analyst/<timeframe>', methods=['GET', 'POST'])
+@app.route('/treemap/<timeframe>', methods=['GET', 'POST'])
 def create_treemap(timeframe="daylyArray"):
     cur = mysql.connection.cursor()
     cur.execute("""
@@ -404,11 +402,11 @@ def create_treemap(timeframe="daylyArray"):
     if request.method == 'POST':
         selected_timeframe = request.form.get('timeframe')
         if selected_timeframe == "daylyArray":
-            return redirect('/analyst/daylyArray')
+            return redirect('/treemap/daylyArray')
         elif selected_timeframe == "weekArray":
-            return redirect('/analyst/weekArray')
+            return redirect('/treemap/weekArray')
         elif selected_timeframe == "monthArray":
-            return redirect('/analyst/monthArray')
+            return redirect('/treemap/monthArray')
         else:
             return "Khung giờ không hợp lệ"
     cur.execute("""SELECT * 
@@ -432,11 +430,11 @@ def create_treemap(timeframe="daylyArray"):
     df_price = df_price[['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'close_pr']]
     #append infomation
     cur.execute("""SELECT ct.ticker, ct.comGroupCode, ct.organName, ct.organShortName, it.industry_name 
-    FROM company_table ct
+    FROM company ct
     JOIN company_subgroup cs ON ct.ticker = cs.id_company
     JOIN group_subgroup gs ON gs.id_subgroup = cs.id_subgroup
     JOIN industry_group ig ON ig.id_group = gs.id_group
-    JOIN industry_table it ON it.id_industry = ig.id_industry
+    JOIN industry it ON it.id_industry = ig.id_industry
     """)
     records = cur.fetchall()
     columnName = ['ticker', 'comGroupCode', 'organName', 'organShortName', 'industry_name']

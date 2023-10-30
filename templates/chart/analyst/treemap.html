@@ -1,212 +1,65 @@
-<!DOCTYPE html>
-<html>
+{% extends "base.html" %}
+{% block title %} Bản đồ nhiệt {% endblock title %}
+{% block content %}
+<!-- page content -->
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <div class="row" style="display: inline-block;">
+    </div>
+    <!-- /top tiles -->
 
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <!-- Meta, title, CSS, favicons, etc. -->
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <div class="row">
+        <div class="col-md-12 col-sm-12 ">
+            <div class="dashboard_graph">
 
-    <title>Stock Analyst! | </title>
-
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='vendors/bootstrap/dist/css/bootstrap.min.css') }}">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='vendors/font-awesome/css/font-awesome.min.css') }}">
-    <!-- NProgress -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='vendors/nprogress/nprogress.css') }}">
-    <!-- bootstrap-progressbar -->
-    <link rel="stylesheet"
-        href="{{ url_for('static', filename='vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css') }}">
-    <!-- bootstrap-daterangepicker -->
-    <link rel="stylesheet"
-        href="{{ url_for('static', filename='vendors/bootstrap-daterangepicker/daterangepicker.css') }}">
-
-
-    <!-- Custom Theme Style -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='build/css/custom.min.css') }}">
-
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc0/dist/css/select2.min.css" rel="stylesheet" />
-</head>
-
-<body class="nav-md">
-    <div class="container body">
-        <div class="main_container">
-            <div class="col-md-3 left_col">
-                <div class="left_col scroll-view">
-                    <div class="navbar nav_title" style="border: 0;">
-                        <a href="" class="site_title"><i class="fa fa-line-chart"></i> <span>Stock Analyst!</span></a>
+                <div class="row x_title">
+                    <div class="col-md-6">
+                        <h3>Bản đồ nhiệt</h3>
                     </div>
+                    <div class="col-md-6">
+                        <div id="reportrange" class="pull-right"
+                            style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
+                            <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
+                            <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
+                        </div>
+                    </div>
+                </div>
 
-                    <div class="clearfix"></div>
-                    <!-- /menu profile quick info -->
+                <div class="col-md-12 col-sm-12 ">
+                    <div>
+                        <form method="post">
+                            <input type="radio" name="timeframe" value="daylyArray" style="margin-right: 10px;" {% if
+                                selected_timeframe=="daylyArray" %}checked{% endif %}>
+                            <label for="daylyArray">Daily</label>
+                            <input type="radio" name="timeframe" value="weekArray" style="margin-right: 10px;" {% if
+                                selected_timeframe=="weekArray" %}checked{% endif %}>
+                            <label for="weekArray">Weekly</label>
+                            <input type="radio" name="timeframe" value="monthArray" style="margin-right: 10px;" {% if
+                                selected_timeframe=="monthArray" %}checked{% endif %}>
+                            <label for="monthArray">Monthly</label>
+                            <input type="submit" value="Cập nhật"
+                                style="background-color: #3498db; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">
+                        </form>
 
-                    <br />
 
-                    <!-- sidebar menu -->
-                    <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
-                        <div class="menu_section">
-                            <ul class="nav side-menu">
-                                <li><a href="/cand/d1/TCH"><i class="fa fa-home"></i> Trang chủ <span
-                                            class="fa fa-chevron-down"></span></a>
 
-                                </li>
-                                <li><a><i class="fa fa-bar-chart-o"></i> Phân tích kỹ thuật <span
-                                            class="fa fa-chevron-down"></span></a>
-                                    <ul class="nav child_menu">
-                                        <li><a href="/analyst/d1/TCH">Chart 1</a></li>
-                                        <li><a href="/mcdx/m15/TCH">MCDX</a></li>
-                                        <li><a href="/analys/daylyArray">Bản đồ nhiệt</a></li>
 
-                                    </ul>
-                                </li>
-                            </ul>
+                        <div style="margin-top: 20px; border: 1px solid #ccc; padding: 20px; border-radius: 5px; transition: transform 0.2s;"
+                            onmouseover="this.style.transform='scale(1.02)';"
+                            onmouseout="this.style.transform='scale(1)';">
+                            {{ treemap | safe }}
+                        </div>
+                        <div style="margin-top: 20px; border: 1px solid #ccc; padding: 20px; border-radius: 5px; transition: transform 0.2s;"
+                            onmouseover="this.style.transform='scale(1.02)';"
+                            onmouseout="this.style.transform='scale(1)';">
+                            {{ plot_vn30 | safe }}
                         </div>
 
-                    </div>
-                    <!-- /sidebar menu -->
 
-                    <!-- /menu footer buttons -->
-                    <div class="sidebar-footer hidden-small">
-                        <a data-toggle="tooltip" data-placement="top" title="Settings">
-                            <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
-                        </a>
-                        <a data-toggle="tooltip" data-placement="top" title="FullScreen">
-                            <span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span>
-                        </a>
-                        <a data-toggle="tooltip" data-placement="top" title="Lock">
-                            <span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span>
-                        </a>
-                        <a data-toggle="tooltip" data-placement="top" title="Logout" href="login.html">
-                            <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
-                        </a>
                     </div>
-                    <!-- /menu footer buttons -->
                 </div>
             </div>
-
-            <!-- top navigation -->
-            <div class="top_nav">
-                <div class="nav_menu">
-                    <div class="nav toggle">
-                        <a id="menu_toggle"><i class="fa fa-bars"></i></a>
-                    </div>
-                    <nav class="nav navbar-nav">
-                        <ul class=" navbar-right">
-                            <li class="nav-item dropdown open" style="padding-left: 15px;">
-                                <a href="javascript:;" class="user-profile dropdown-toggle" aria-haspopup="true"
-                                    id="navbarDropdown" data-toggle="dropdown" aria-expanded="false">
-                                    Dương Nam
-                                </a>
-                            </li>
-
-                        </ul>
-                    </nav>
-                </div>
-            </div>
-            <!-- /top navigation -->
-
-            <!-- page content -->
-            <div class="right_col" role="main">
-                <!-- top tiles -->
-                <div class="row" style="display: inline-block;">
-                </div>
-                <!-- /top tiles -->
-
-                <div class="row">
-                    <div class="col-md-12 col-sm-12 ">
-                        <div class="dashboard_graph">
-
-                            <div class="row x_title">
-                                <div class="col-md-6">
-                                    <h3>Bản đồ nhiệt</h3>
-                                </div>
-                                <div class="col-md-6">
-                                    <div id="reportrange" class="pull-right"
-                                        style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
-                                        <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
-                                        <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-12 col-sm-12 ">
-                                <div>
-                                    <form method="post">
-                                        <input type="radio" name="timeframe" value="daylyArray" style="margin-right: 10px;" {% if selected_timeframe == "daylyArray" %}checked{% endif %}>
-                                        <label for="daylyArray">Daily</label>
-                                        <input type="radio" name="timeframe" value="weekArray" style="margin-right: 10px;" {% if selected_timeframe == "weekArray" %}checked{% endif %}>
-                                        <label for="weekArray">Weekly</label>
-                                        <input type="radio" name="timeframe" value="monthArray" style="margin-right: 10px;" {% if selected_timeframe == "monthArray" %}checked{% endif %}>
-                                        <label for="monthArray">Monthly</label>
-                                        <input type="submit" value="Cập nhật" style="background-color: #3498db; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">
-                                    </form>
-                                    
-                                    
-                                    
-
-                                    <div style="margin-top: 20px; border: 1px solid #ccc; padding: 20px; border-radius: 5px; transition: transform 0.2s;"
-                                        onmouseover="this.style.transform='scale(1.02)';"
-                                        onmouseout="this.style.transform='scale(1)';">
-                                        {{ treemap | safe }}
-                                    </div>
-                                    <div style="margin-top: 20px; border: 1px solid #ccc; padding: 20px; border-radius: 5px; transition: transform 0.2s;"
-                                    onmouseover="this.style.transform='scale(1.02)';"
-                                    onmouseout="this.style.transform='scale(1)';">
-                                    {{ plot_vn30 | safe }}
-                                </div>
-
-
-                                </div>
-                            </div>
-                    </div>
-                </div>
-
-                <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc0/dist/js/select2.min.js"></script>
-
-                <!-- jQuery -->
-                <script src="{{ url_for('static', filename='vendors/jquery/dist/jquery.min.js') }}"></script>
-                <!-- Bootstrap -->
-                <script
-                    src="{{ url_for('static', filename='vendors/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
-                <!-- FastClick -->
-                <script src="{{ url_for('static', filename='vendors/fastclick/lib/fastclick.js') }}"></script>
-                <!-- NProgress -->
-                <script src="{{ url_for('static', filename='vendors/nprogress/nprogress.js') }}"></script>
-                <!-- Chart.js -->
-                <script src="{{ url_for('static', filename='vendors/Chart.js/dist/Chart.min.js') }}"></script>
-                <!-- jQuery Sparklines -->
-                <script
-                    src="{{ url_for('static', filename='vendors/jquery-sparkline/dist/jquery.sparkline.min.js') }}"></script>
-                <!-- morris.js -->
-                <script src="{{ url_for('static', filename='vendors/raphael/raphael.min.js') }}"></script>
-                <script src="{{ url_for('static', filename='vendors/morris.js/morris.min.js') }}"></script>
-                <!-- gauge.js -->
-                <script src="{{ url_for('static', filename='vendors/gauge.js/dist/gauge.min.js') }}"></script>
-                <!-- bootstrap-progressbar -->
-                <script
-                    src="{{ url_for('static', filename='vendors/bootstrap-progressbar/bootstrap-progressbar.min.js') }}"></script>
-                <!-- Skycons -->
-                <script src="{{ url_for('static', filename='vendors/skycons/skycons.js') }}"></script>
-                <!-- Flot -->
-                <script src="{{ url_for('static', filename='vendors/Flot/jquery.flot.js') }}"></script>
-                <script src="{{ url_for('static', filename='vendors/Flot/jquery.flot.pie.js') }}"></script>
-                <script src="{{ url_for('static', filename='vendors/Flot/jquery.flot.time.js') }}"></script>
-                <script src="{{ url_for('static', filename='vendors/Flot/jquery.flot.stack.js') }}"></script>
-                <script src="{{ url_for('static', filename='vendors/Flot/jquery.flot.resize.js') }}"></script>
-                <!-- Flot plugins -->
-                <script
-                    src="{{ url_for('static', filename='vendors/flot.orderbars/js/jquery.flot.orderBars.js') }}"></script>
-                <script
-                    src="{{ url_for('static', filename='vendors/flot-spline/js/jquery.flot.spline.min.js') }}"></script>
-                <script src="{{ url_for('static', filename='vendors/flot.curvedlines/curvedLines.js') }}"></script>
-                <!-- DateJS -->
-                <script src="{{ url_for('static', filename='vendors/DateJS/build/date.js') }}"></script>
-                <!-- bootstrap-daterangepicker -->
-                <script src="{{ url_for('static', filename='vendors/moment/min/moment.min.js') }}"></script>
-                <script
-                    src="{{ url_for('static', filename='vendors/bootstrap-daterangepicker/daterangepicker.js') }}"></script>
-                <!-- Custom Theme Scripts -->
-                <script src="{{ url_for('static', filename='build/js/custom.min.js') }}"></script>
-</body>
+        </div>
+    </div>
+</div>
+{% endblock  %}
