@@ -443,12 +443,18 @@ def create_treemap(timeframe="daylyArray"):
     data_result = df_price.set_index('ticker').join(df.set_index('ticker'), on='ticker', validate='1:1').reset_index()
     data_result['percent'] = pd.to_numeric((data_result['close'] - data_result['close_pr'])/data_result['close_pr'])
     data_result = data_result.fillna(0)
+    
     def checkTypeUpdown(x):
         if x == 0:
             return '0'
         if x < 0:
+            if x <= -0.067 and timeframe == "daylyArray":
+                return '-2'
             return '-1'
+        if x >= 0.067 and timeframe == "daylyArray":
+            return '2'
         return '1'
+    
     data_result['type'] = data_result['percent'].apply(checkTypeUpdown)
 
     fig = px.treemap(data_result, 
