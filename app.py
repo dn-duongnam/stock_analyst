@@ -60,14 +60,15 @@ def create_cand_chart(timeframe="d1", ticker="TCH"):
     else:
         open_price, close_price, high_price, low_price, volume = None, None, None, None, None
 
-    cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 100", (ticker,))
+    # cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 100", (ticker,))
+    cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s", (ticker,))
     records = cur.fetchall()
 
     columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'sum_price']
     df = pd.DataFrame.from_records(records, columns=columnName)
     df['time_stamp'] = pd.to_datetime(df['time_stamp'], unit='s')
     df['time'] = df['time_stamp'].dt.tz_localize('UTC').dt.tz_convert('Asia/Ho_Chi_Minh')
-    df = df.sort_values(by='time', ascending=True).reset_index(drop=True)
+    # df = df.sort_values(by='time', ascending=True).reset_index(drop=True)
 
     fig = go.Figure(data=[go.Candlestick(
         x=df['time'],
@@ -99,12 +100,13 @@ def analyst(ticker = "TCH"):
     
     # Truy vấn dữ liệu từ SQL
     cur.execute(f"SELECT * FROM d1 WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 100", (ticker,))
+    cur.execute(f"SELECT * FROM d1 WHERE ticker = %s", (ticker,))
     records = cur.fetchall()
     columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'sum_price']
     df = pd.DataFrame.from_records(records, columns=columnName)
     df['time_stamp'] = pd.to_datetime(df['time_stamp'], unit='s')
     df['time'] = df['time_stamp'].dt.tz_localize('UTC').dt.tz_convert('Asia/Ho_Chi_Minh')
-    df = df.sort_values(by='time', ascending=True).reset_index(drop=True)
+    # df = df.sort_values(by='time', ascending=True).reset_index(drop=True)
     # Tính trung bình trượt 20 ngày
     df['20_day_sma'] = df['close'].rolling(window=20).mean()
 
@@ -401,7 +403,7 @@ def create_treemap(timeframe="daylyArray"):
         return "Khung giờ không hợp lệ"
     if request.method == 'POST':
         selected_timeframe = request.form.get('timeframe')
-        if selected_timeframe == "daylyArray":
+        if selected_timeframe == "daylyArray": 
             return redirect('/treemap/daylyArray')
         elif selected_timeframe == "weekArray":
             return redirect('/treemap/weekArray')
