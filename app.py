@@ -10,10 +10,11 @@ import plotly.express as px
 import plotly.figure_factory as ff
 import pandas as pd
 from plotly.subplots import make_subplots
-
+import requests
+import json
 import numpy as np
 import pandas as pd
-
+from datetime import datetime, date
 app = Flask(__name__)
 app.secret_key = 'Duong Nam'
 
@@ -486,7 +487,36 @@ def create_treemap(timeframe="daylyArray"):
     
     plot_vn30 = fig_vn30.to_html(full_html=False)
     return render_template("/chart/analyst/treemap.html", treemap=plot, plot_vn30 = plot_vn30,selected_timeframe=timeframe)
+
+@app.route('/view_indexMonthIndustry/<type_view>', methods=['GET', 'POST'])
+def viewIndexMonthIndustry(type_view = "1M"):
+    json_banle = indexmonthindustry(industry_code = "5300", type_mode = type_view.upper())
+    # json_banle = json.loads(json_banle)
+    print(json_banle)
+    dat_banle = []
+    dat_banle.append([  datetime.strptime(str(elm['s']), "%d/%m/%y %H:%M").timestamp() if len(elm['s']) > 8 else
+                       datetime.strptime(str(elm['s']), "%d/%m/%y").timestamp() for elm in json_banle['body']['data']])
+    dat_banle.append([ elm['i'] for elm in json_banle['body']['data']])
+    dat_banle.append([ elm['v'] for elm in json_banle['body']['data']])
     
+    print(dat_banle)
+    return render_template("/chart/indexindustry/lineindexindustry.html",
+                           json_banle = dat_banle)
+
+def indexmonthindustry(industry_code = "5300", type_mode = "1M"):
+    header = {
+        "Accept": "application/json",
+        "Accept-Language": "vi",
+        "Content-Type": "application/json",
+        "Referer": "https://tcinvest.tcbs.com.vn/",
+        "Sec-Ch-Ua": '"Chromium";v="118", "Microsoft Edge";v="118", "Not=A?Brand";v="99"',
+        "Sec-Ch-Ua-Mobile": "?0",
+        "Sec-Ch-Ua-Platform": "Windows",
+        "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36 Edg/118.0.2088.76'
+    }
+    url = f"https://apipubaws.tcbs.com.vn/stock-insight/v1/intraday/flow-industry-index?exchange=ALL&industry={industry_code}&type={type_mode}"
+    response = requests.request("GET", url, headers=header).json()
+    return response;
     
 if __name__ == "__main__":
     app.run()
