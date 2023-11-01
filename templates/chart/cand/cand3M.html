@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %} Biểu đồ nến {% endblock title %}
+{% block content %}
+<!-- page content -->
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <div class="row" style="display: inline-block;">
+        <div class="tile_count">
+            <div class="col-md-3 col-sm-3  tile_stats_count">
+                <span class="count_top"><i class="fa fa-usd"></i> Giá mở cửa</span>
+                <div class="count">{{ open_price }}</div>
+            </div>
+            <div class="col-md-3 col-sm-3  tile_stats_count">
+                <span class="count_top"><i class="fa fa-usd"></i> Giá đóng cửa</span>
+                <div class="count">{{ close_price }}</div>
+            </div>
+            <div class="col-md-3 col-sm-3  tile_stats_count">
+                <span class="count_top"><i class="fa fa-usd"></i> Giá cao nhất</span>
+                <div class="count">{{ high_price }}</div>
+            </div>
+            <div class="col-md-3 col-sm-3  tile_stats_count">
+                <span class="count_top"><i class="fa fa-usd"></i> Giá thấp nhất</span>
+                <div class="count">{{ low_price }}</div>
+            </div>
+            <div class="col-md-3 col-sm-3  tile_stats_count">
+                <span class="count_top"><i class="fa fa-bars"></i> Khối lượng giao dịch</span>
+                <div class="count">{{ volume }}</div>
+            </div>
+        </div>
+    </div>
+    <!-- /top tiles -->
+
+    <div class="row">
+        <div class="col-md-12 col-sm-12 ">
+            <div class="dashboard_graph">
+
+                <div class="row x_title">
+                    <div class="col-md-6">
+                        <h3>Candlestick Chart for {{ ticker }}</h3>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="reportrange" class="pull-right"
+                            style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
+                            <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
+                            <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12 col-sm-12 ">
+                    <div>
+                        <label for="ticker"
+                            style="font-weight: bold; display: inline-block; width: 120px; text-align: right;">Chọn
+                            mã cổ phiếu:</label>
+                        <select id="ticker" name="ticker" class="select2" style="width: 150px;">
+                            <option value="">-- Chọn mã cổ phiếu --</option>
+                            {% for code in stock_codes %}
+                            <option value="{{ code }}" {% if code==ticker %}selected{% endif %}>{{ code }}
+                            </option>
+                            {% endfor %}
+                        </select>
+
+                        <label for="timeframe"
+                            style="font-weight: bold; display: inline-block; width: 120px; text-align: right;">Chọn
+                            khung giờ:</label>
+                        <select id="timeframe" name="timeframe" style="width: 150px;">
+                            <option value="m1" {% if selected_timeframe=="m1" %}selected{% endif %}>M1
+                            </option>
+                            <option value="m15" {% if selected_timeframe=="m15" %}selected{% endif %}>M15
+                            </option>
+                            <option value="m30" {% if selected_timeframe=="m30" %}selected{% endif %}>M30
+                            </option>
+                            <option value="h1" {% if selected_timeframe=="h1" %}selected{% endif %}>H1
+                            </option>
+                            <option value="d1" {% if selected_timeframe=="d1" %}selected{% endif %}>D1
+                            </option>
+                        </select>
+
+                        <button
+                            style="background-color: #007bff; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-left: 20px;"
+                            onclick="updateChart()">Cập nhật biểu đồ</button>
+
+                        <div style="margin-top: 20px; border: 1px solid #ccc; padding: 20px; border-radius: 5px; transition: transform 0.2s;"
+                            onmouseover="this.style.transform='scale(1.02)';"
+                            onmouseout="this.style.transform='scale(1)';">
+                            {{ plot_cand | safe }}
+                        </div>
+
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $('.select2').select2();
+    });
+
+    function updateChart() {
+        var selectedTicker = document.getElementById("ticker").value;
+        var selectedTimeframe = document.getElementById("timeframe").value;
+        if (selectedTicker && selectedTimeframe) {
+            location.href = "/cand/" + selectedTimeframe + "/" + selectedTicker;
+        }
+    }
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc0/dist/js/select2.min.js"></script>
+
+{% endblock %}

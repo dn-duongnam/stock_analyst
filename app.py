@@ -34,6 +34,10 @@ app.config['MYSQL_DATABASE_AUTH_PLUGIN'] = 'mysql_native_password'
 mysql = MySQL(app)
 
 #D1
+
+def extract_years(data):
+    years = data['time_stamp'].apply(lambda x: pd.to_datetime(x, unit='s').year)
+    return years.unique()
 @app.route("/")
 @app.route('/cand/<timeframe>/<ticker>', methods=['GET', 'POST'])
 def create_cand_chart(timeframe="d1", ticker="TCH"):
@@ -62,7 +66,7 @@ def create_cand_chart(timeframe="d1", ticker="TCH"):
         open_price, close_price, high_price, low_price, volume = None, None, None, None, None
 
     # cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 100", (ticker,))
-    cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s", (ticker,))
+    cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s" , (ticker,))
     records = cur.fetchall()
 
     columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'sum_price']
@@ -94,6 +98,67 @@ def create_cand_chart(timeframe="d1", ticker="TCH"):
     stock_codes = [code[0] for code in cur.fetchall()]
 
     return render_template("/chart/cand/cand.html", plot_cand=plot_html, ticker=ticker, stock_codes=stock_codes, selected_timeframe=timeframe, open_price=open_price, close_price=close_price, high_price=high_price, low_price=low_price, volume=volume)
+
+#get 3month
+@app.route('/cand3M/<timeframe>/<ticker>', methods=['GET', 'POST'])
+def create_cand_chart_100(timeframe="d1", ticker="TCH"):
+    cur = mysql.connection.cursor()
+
+    if timeframe == "m1":
+        table_name = "m1"
+    elif timeframe == "m15":
+        table_name = "m15"
+    elif timeframe == "m30":
+        table_name = "m30"
+    elif timeframe == "h1":
+        table_name = "h1"
+    elif timeframe == "d1":
+        table_name = "d1"
+    else:
+        return "Khung giờ không hợp lệ"
+
+    # Truy vấn SQL để lấy giá mở cửa, giá đóng cửa, giá cao nhất, giá thấp nhất và khối lượng giao dịch của ngày mới nhất
+    cur.execute(f"SELECT open, close, high, low, volume FROM {table_name} WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 1", (ticker,))
+    latest_data = cur.fetchone()
+
+    if latest_data:
+        open_price, close_price, high_price, low_price, volume = latest_data
+    else:
+        open_price, close_price, high_price, low_price, volume = None, None, None, None, None
+
+    cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 66", (ticker,))
+    # cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s", (ticker,))
+    records = cur.fetchall()
+
+    columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'sum_price']
+    df = pd.DataFrame.from_records(records, columns=columnName)
+    df['time_stamp'] = pd.to_datetime(df['time_stamp'], unit='s')
+    df['time'] = df['time_stamp'].dt.tz_localize('UTC').dt.tz_convert('Asia/Ho_Chi_Minh')
+    df = df.sort_values(by='time', ascending=True).reset_index(drop=True)
+
+    fig = go.Figure(data=[go.Candlestick(
+        x=df['time'],
+        open=df['open'],
+        high=df['high'],
+        low=df['low'],
+        close=df['close']
+    )])
+
+    fig.update_layout(
+        xaxis_title='Thời gian',
+        yaxis_title='Giá',
+        plot_bgcolor='#363636',
+        xaxis_gridcolor='gray',
+        yaxis_gridcolor='gray',
+        xaxis_rangeslider_visible=True
+    )
+
+    plot_html = fig.to_html(full_html=False)
+
+    cur.execute("SELECT DISTINCT ticker FROM d1")
+    stock_codes = [code[0] for code in cur.fetchall()]
+
+    return render_template("/chart/cand/cand3M.html", plot_cand=plot_html, ticker=ticker, stock_codes=stock_codes, selected_timeframe=timeframe, open_price=open_price, close_price=close_price, high_price=high_price, low_price=low_price, volume=volume)
 # @app.route("/")
 @app.route("/analyst/d1/<ticker>", methods=['GET', 'POST'])
 def analyst(ticker = "TCH"):
@@ -328,6 +393,239 @@ def analyst(ticker = "TCH"):
 
     return render_template("/chart/analyst/analyst.html", plot_bb=plot_bb, plot_ma = plot_ma, plot_macd = plot_macd, plot_stoch = plot_stoch, plot_rsi = plot_rsi, ticker=ticker, stock_codes=stock_codes)
 
+#get 3 month record
+@app.route("/analyst3M/d1/<ticker>", methods=['GET', 'POST'])
+def analyst_3m(ticker = "TCH"):
+    cur = mysql.connection.cursor()
+    
+    # Truy vấn dữ liệu từ SQL
+    cur.execute(f"SELECT * FROM d1 WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 66", (ticker,))
+    # cur.execute(f"SELECT * FROM d1 WHERE ticker = %s", (ticker,))
+    records = cur.fetchall()
+    columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'sum_price']
+    df = pd.DataFrame.from_records(records, columns=columnName)
+    df['time_stamp'] = pd.to_datetime(df['time_stamp'], unit='s')
+    df['time'] = df['time_stamp'].dt.tz_localize('UTC').dt.tz_convert('Asia/Ho_Chi_Minh')
+    df = df.sort_values(by='time', ascending=True).reset_index(drop=True)
+    # Tính trung bình trượt 20 ngày
+    df['20_day_sma'] = df['close'].rolling(window=20).mean()
+
+    # Tính độ lệch chuẩn 20 ngày
+    df['20_day_std'] = df['close'].rolling(window=20).std()
+
+    # Tính Bollinger Bands
+    df['upper_band'] = df['20_day_sma'] + (df['20_day_std'] * 2)
+    df['lower_band'] = df['20_day_sma'] - (df['20_day_std'] * 2)
+
+    # Tạo biểu đồ Bollinger Bands sử dụng Plotly
+    fig_bb = go.Figure()
+
+    # Hiển thị dữ liệu Giá và Bollinger Bands
+    fig_bb.add_trace(go.Scatter(x=df['time'], y=df['close'], mode='lines', name='Giá đóng cửa', line=dict(color='#00F4B0', width=5)))
+    fig_bb.add_trace(go.Scatter(x=df['time'], y=df['20_day_sma'], mode='lines', name='Trung bình 20 ngày',line=dict(color='#FBAC20',  dash='dot',  width=3)))
+    fig_bb.add_trace(go.Scatter(x=df['time'], y=df['upper_band'], mode='lines', name='Dải trên Bollinger Bands', line=dict(color='#555555',  width=4)))
+    fig_bb.add_trace(go.Scatter(x=df['time'], y=df['lower_band'],fill='tonexty', mode='lines', name='Dải dưới Bollinger Bands', line=dict(color='#555555',  width=3)))
+
+    # Cài đặt thuộc tính cho biểu đồ, đặt màu nền trắng và ẩn các đường kẻ dọc
+    fig_bb.update_layout(
+                    xaxis=dict(title='Thời gian', showgrid=False),  # Ẩn đường kẻ dọc trên trục x
+                    yaxis=dict(title='Giá'),  # Ẩn đường kẻ dọc trên trục y
+                    xaxis_rangeslider_visible=True,
+                    plot_bgcolor='#363636',  # Màu nền của biểu đồ
+                    paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
+                    xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
+                    yaxis_gridcolor='gray',
+                    legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="right",
+                    x=1)) # Màu của đường kẻ ngang
+    # Chuyển biểu đồ Plotly thành HTML
+    plot_bb = fig_bb.to_html(full_html=False)
+     # Tính trung bình trượt 5 ngày và 20 ngày
+    df['5_day_sma'] = df['close'].rolling(window=5).mean()
+    df['20_day_sma_2'] = df['close'].rolling(window=20).mean()
+
+    # Tạo biểu đồ tương tác
+    fig_ma = go.Figure()
+
+    # Hiển thị dữ liệu Giá cổ phiếu và MA(5) và MA(20)
+    fig_ma.add_trace(go.Scatter(x=df['time'], y=df['close'], mode='lines', name='Giá đóng cửa', line=dict(color='#00F4B0', width=5)))
+    fig_ma.add_trace(go.Scatter(x=df['time'], y=df['5_day_sma'], mode='lines', name='MA(5)', line=dict(color='#FBAC20',  dash='dot',width=3)))
+    fig_ma.add_trace(go.Scatter(x=df['time'], y=df['20_day_sma_2'], mode='lines', name='MA(20)', line=dict(color='#64BAFF',  dash='dot', width=3)))
+
+    # Cài đặt thuộc tính cho biểu đồ, đặt màu nền trắng
+    fig_ma.update_layout(title='Biểu đồ Giá cổ phiếu và MA(5) và MA(20)',
+                    xaxis=dict(title='Thời gian',  showgrid=False),
+                    yaxis=dict(title='Giá'),
+                    xaxis_rangeslider_visible=True,
+                    plot_bgcolor='#363636',  # Màu nền của biểu đồ
+                    paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
+                    xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
+                    yaxis_gridcolor='gray',
+                    legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="right",
+                    x=1))# Màu của đường kẻ ngang
+    plot_ma = fig_ma.to_html(full_html=False)
+    
+        # Tính đường MACD (Moving Average Convergence Divergence)
+    short_term = df['close'].ewm(span=12).mean()
+    long_term = df['close'].ewm(span=26).mean()
+    df['MACD'] = short_term - long_term
+
+    # Tính đường Tín hiệu (Signal Line)
+    df['Signal_Line'] = df['MACD'].ewm(span=9).mean()
+
+    # Tính MACD Histogram
+    df['MACD_Histogram'] = df['MACD'] - df['Signal_Line']
+
+    # Tạo biểu đồ MACD sử dụng Plotly
+    fig_macd = go.Figure()
+
+    # Hiển thị dữ liệu MACD và Signal Line
+    fig_macd.add_trace(go.Scatter(x=df['time'], y=df['MACD'], mode='lines', name='MACD', line=dict(color='#FF3747', width=5)))
+    fig_macd.add_trace(go.Scatter(x=df['time'], y=df['Signal_Line'], mode='lines', name='Signal Line', line=dict(color='#64BAFF', width=5)))
+
+    # Tạo biểu đồ Histogram
+    fig_macd.add_trace(go.Bar(x=df['time'], y=df['MACD_Histogram'], name='MACD Histogram', marker=dict(color='#64BAFF')))
+
+    # Cài đặt thuộc tính cho biểu đồ
+    fig_macd.update_layout(
+                    xaxis=dict(title='Thời gian', showgrid=False),
+                    yaxis=dict(title='Giá trị'),
+                    xaxis_rangeslider_visible=True,
+                    plot_bgcolor='#363636',  # Màu nền của biểu đồ
+                    paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
+                    xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
+                    yaxis_gridcolor='gray',
+                    legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="right",
+                    x=1))# Màu của đường kẻ ngang đồ
+
+    plot_macd = fig_macd.to_html(full_html=False)
+    
+     # Tính %K và %D
+    period = 14  # Kỳ giao dịch
+    smooth = 3   # Độ trơn
+    df['low_min'] = df['low'].rolling(window=period).min()
+    df['high_max'] = df['high'].rolling(window=period).max()
+    df['%K'] = 100 * (df['close'] - df['low_min']) / (df['high_max'] - df['low_min'])
+    df['%D'] = df['%K'].rolling(window=smooth).mean()
+
+    # Tạo biểu đồ Stochastic Oscillator sử dụng Plotly
+    fig_stoch = go.Figure()
+
+    # Hiển thị dữ liệu %K và %D
+    fig_stoch.add_trace(go.Scatter(x=df['time'], y=df['%K'], mode='lines', name='%K (màu xanh)', line=dict(color='#64BAFF', width=5)))
+    fig_stoch.add_trace(go.Scatter(x=df['time'], y=df['%D'], mode='lines', name='%D (màu đỏ)', line=dict(color='#FF3747', width=5)))
+
+    # Vẽ đường giới hạn 20 và 80
+    fig_stoch.add_shape(
+        go.layout.Shape(
+            type="line",
+            x0=df['time'].min(),
+            x1=df['time'].max(),
+            y0=20,
+            y1=20,
+            line=dict(color="white", dash="dash", width = 3),
+        )
+    )
+    fig_stoch.add_shape(
+        go.layout.Shape(
+            type="line",
+            x0=df['time'].min(),
+            x1=df['time'].max(),
+            y0=80,
+            y1=80,
+            line=dict(color="white", dash="dash", width = 3),
+        )
+    )
+    # Cài đặt thuộc tính cho biểu đồ
+    fig_stoch.update_layout(
+                    xaxis=dict(title='Thời gian', showgrid=False),
+                    yaxis=dict(title='%'),
+                    xaxis_rangeslider_visible=True,
+                    yaxis_range=[0, 100],
+                    plot_bgcolor='#363636',  # Màu nền của biểu đồ
+                    paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
+                    xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
+                    yaxis_gridcolor='gray',
+                    legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="right",
+                    x=1))# Màu của đường kẻ ngang đồ
+    plot_stoch = fig_stoch.to_html(full_html=False)
+    
+    # Tính chỉ số RSI(14)
+    delta = df['close'].diff(1)
+    gain = delta.where(delta > 0, 0)
+    loss = -delta.where(delta < 0, 0)
+
+    avg_gain = gain.rolling(window=14).mean()
+    avg_loss = loss.rolling(window=14).mean()
+
+    rs = avg_gain / avg_loss
+    rsi = 100 - (100 / (1 + rs))
+    print(rsi.head(20))
+
+    # Tạo biểu đồ RSI(14) với đường giới hạn 30 và 70
+    fig_rsi = go.Figure()
+
+    # Hiển thị dữ liệu RSI(14)
+    fig_rsi.add_trace(go.Scatter(x=df['time'], y=rsi, mode='lines', name='RSI(14)', line=dict(color='#FBAC20', width = 5)))
+
+    # Thêm đường giới hạn 30 và 70
+    fig_rsi.add_shape(
+        go.layout.Shape(
+            type="line",
+            x0=df['time'].min(),
+            x1=df['time'].max(),
+            y0=30,
+            y1=30,
+            line=dict(color="white", dash="dash", width = 3),
+        )
+    )
+    fig_rsi.add_shape(
+        go.layout.Shape(
+            type="line",
+            x0=df['time'].min(),
+            x1=df['time'].max(),
+            y0=70,
+            y1=70,
+            line=dict(color="white", dash="dash", width = 2),
+        )
+    )
+
+    # Đặt các thuộc tính cho biểu đồ
+    fig_rsi.update_layout(title='RSI(14) với Đường Giới Hạn 30 và 70',
+                    xaxis=dict(title='Thời gian', showgrid=False),
+                    yaxis=dict(title='RSI'),
+                    xaxis_rangeslider_visible=True,
+                    plot_bgcolor='#363636',  # Màu nền của biểu đồ
+                    paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
+                    xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
+                    yaxis_gridcolor='gray',
+                    legend=dict(
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.02,
+                    xanchor="right",
+                    x=1))# Màu của đường kẻ ngang đồ
+    plot_rsi = fig_rsi.to_html(full_html=False)
+    
+    cur.execute("SELECT DISTINCT ticker FROM d1")
+    stock_codes = [code[0] for code in cur.fetchall()]
+
+    return render_template("/chart/analyst/analyst3M.html", plot_bb=plot_bb, plot_ma = plot_ma, plot_macd = plot_macd, plot_stoch = plot_stoch, plot_rsi = plot_rsi, ticker=ticker, stock_codes=stock_codes)
 @app.route('/mcdx/<timeframe>/<ticker>', methods=['GET', 'POST'])
 def create_mcdx_chart(timeframe="m15", ticker="TCH"):
     cur = mysql.connection.cursor()
@@ -352,9 +650,9 @@ def create_mcdx_chart(timeframe="m15", ticker="TCH"):
     df['time_stamp'] = pd.to_datetime(df['time_stamp'], unit='s')
     df['time'] = df['time_stamp'].dt.tz_localize('UTC')
 
-    df["Sharks"] = (df["percent_shark_sell"] + df["percent_shark_buy"]) * 20
-    df["Wolfs"] = (df["percent_wolf_sell"] + df["percent_wolf_buy"]) * 20
-    df["Sheeps"] = (df["percent_sheep_sell"] + df["percent_sheep_buy"]) * 20
+    df["Sharks"] = (df["percent_shark_sell"] + df["percent_shark_buy"]) 
+    df["Wolfs"] = (df["percent_wolf_sell"] + df["percent_wolf_buy"]) 
+    df["Sheeps"] = (df["percent_sheep_sell"] + df["percent_sheep_buy"]) 
 
 
     df['5_day_sma'] = df['Sharks'].rolling(window=5).mean()
