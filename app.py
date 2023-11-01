@@ -26,7 +26,7 @@ app.secret_key = 'Duong Nam'
 # app.config['MYSQL_DATABASE_AUTH_PLUGIN'] = 'mysql_native_password'
 
 app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_PORT'] = 3308
+app.config['MYSQL_PORT'] = 3306
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'stock_db'
@@ -490,16 +490,37 @@ def create_treemap(timeframe="daylyArray"):
 
 @app.route('/view_indexMonthIndustry/<type_view>', methods=['GET', 'POST'])
 def viewIndexMonthIndustry(type_view = "1M"):
-    json_banle = indexmonthindustry(industry_code = "5300", type_mode = type_view.upper())
+    
+    dict_industry_code = {
+        "Bán lẻ": "5300",
+        "Bất động sản": "8600",
+        "Dầu khí": "0500",
+        "Dịch vụ tài chính": "8700",
+        "Điện, nước xăng dầu khí đốt": "7500",
+        "Ngân hàng": "8300",
+        "Viễn thông": "6500",
+        "Xây dựng và vật liệu": "2300",
+        "Y tế": "4500",
+        "Bảo hiểm": "8500",
+        "Công nghệ thông tin": "9500",
+        "Du lịch và giải trí": "5700",
+        "Hàng và dịch vụ Công nghiệp": "2700",
+        "Hàng cá nhân và gia dụng": "3700",
+        "Hóa chất": "1300",
+        "Ô tô và phụ tùng": "3300",
+        "Thực phẩm và đồ uống": "3500",
+        "Tài nguyên cơ bản": "1700",
+        "Truyền thông": "5500"
+    }
+    
+    json_banle = indexmonthindustry(industry_code = dict_industry_code['Bán lẻ'], type_mode = type_view.upper())
     # json_banle = json.loads(json_banle)
     print(json_banle)
     dat_banle = []
-    dat_banle.append([  datetime.strptime(str(elm['s']), "%d/%m/%y %H:%M").timestamp() if len(elm['s']) > 8 else
-                       datetime.strptime(str(elm['s']), "%d/%m/%y").timestamp() for elm in json_banle['body']['data']])
+    dat_banle.append([ str(datetime.strptime(str(elm['s']), "%d/%m/%y %H:%M")) if len(elm['s']) > 8 else
+                       str(datetime.strptime(str(elm['s']), "%d/%m/%y")) for elm in json_banle['body']['data']])
     dat_banle.append([ elm['i'] for elm in json_banle['body']['data']])
     dat_banle.append([ elm['v'] for elm in json_banle['body']['data']])
-    
-    print(dat_banle)
     return render_template("/chart/indexindustry/lineindexindustry.html",
                            json_banle = dat_banle)
 
