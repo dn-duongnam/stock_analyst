@@ -69,12 +69,12 @@
         </div>
     </div>
 </div>
-<script>
+<script> "%%a%%%" 
     
     new Chart(document.getElementById("line-chart"), {
         type: 'bar',
         data: {
-          labels: {{json_banle[0]}},
+          labels: {{json_banle[0] | safe}},
           datasets: [
             { 
               data: {{ json_banle[1] }},
@@ -112,7 +112,10 @@
                 type: 'linear',
                 position: 'right',
             }
-          }
+          },
+          interaction: {
+            mode: 'nearest'
+        }
         }
       });
 </script>
