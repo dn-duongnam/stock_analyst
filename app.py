@@ -34,13 +34,70 @@ app.config['MYSQL_DATABASE_AUTH_PLUGIN'] = 'mysql_native_password'
 mysql = MySQL(app)
 
 #D1
-
-def extract_years(data):
-    years = data['time_stamp'].apply(lambda x: pd.to_datetime(x, unit='s').year)
-    return years.unique()
 @app.route("/")
-@app.route('/cand/<timeframe>/<ticker>', methods=['GET', 'POST'])
-def create_cand_chart(timeframe="d1", ticker="TCH"):
+# @app.route("/")
+# @app.route('/cand/<timeframe>/<ticker>', methods=['GET', 'POST'])
+# def create_cand_chart(timeframe="d1", ticker="TCH"):
+#     cur = mysql.connection.cursor()
+
+#     if timeframe == "m1":
+#         table_name = "m1"
+#     elif timeframe == "m15":
+#         table_name = "m15"
+#     elif timeframe == "m30":
+#         table_name = "m30"
+#     elif timeframe == "h1":
+#         table_name = "h1"
+#     elif timeframe == "d1":
+#         table_name = "d1"
+#     else:
+#         return "Khung giờ không hợp lệ"
+
+#     # Truy vấn SQL để lấy giá mở cửa, giá đóng cửa, giá cao nhất, giá thấp nhất và khối lượng giao dịch của ngày mới nhất
+#     cur.execute(f"SELECT open, close, high, low, volume FROM {table_name} WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 1", (ticker,))
+#     latest_data = cur.fetchone()
+
+#     if latest_data:
+#         open_price, close_price, high_price, low_price, volume = latest_data
+#     else:
+#         open_price, close_price, high_price, low_price, volume = None, None, None, None, None
+
+#     # cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 100", (ticker,))
+#     cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s" , (ticker,))
+#     records = cur.fetchall()
+
+#     columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'sum_price']
+#     df = pd.DataFrame.from_records(records, columns=columnName)
+#     df['time_stamp'] = pd.to_datetime(df['time_stamp'], unit='s')
+#     df['time'] = df['time_stamp'].dt.tz_localize('UTC').dt.tz_convert('Asia/Ho_Chi_Minh')
+#     # df = df.sort_values(by='time', ascending=True).reset_index(drop=True)
+
+#     fig = go.Figure(data=[go.Candlestick(
+#         x=df['time'],
+#         open=df['open'],
+#         high=df['high'],
+#         low=df['low'],
+#         close=df['close']
+#     )])
+
+#     fig.update_layout(
+#         xaxis_title='Thời gian',
+#         yaxis_title='Giá',
+#         plot_bgcolor='#363636',
+#         xaxis_gridcolor='gray',
+#         yaxis_gridcolor='gray',
+#         xaxis_rangeslider_visible=True
+#     )
+
+#     plot_html = fig.to_html(full_html=False)
+
+#     cur.execute("SELECT DISTINCT ticker FROM d1")
+#     stock_codes = [code[0] for code in cur.fetchall()]
+
+#     return render_template("/chart/cand/cand.html", plot_cand=plot_html, ticker=ticker, stock_codes=stock_codes, selected_timeframe=timeframe, open_price=open_price, close_price=close_price, high_price=high_price, low_price=low_price, volume=volume)
+
+@app.route('/cand/<timeframe>/<ticker>/<start_year>/<end_year>', methods=['GET', 'POST'])
+def create_cand1Y_chart(timeframe="d1", ticker="TCH", start_year = 2016, end_year = 2023):
     cur = mysql.connection.cursor()
 
     if timeframe == "m1":
@@ -64,9 +121,13 @@ def create_cand_chart(timeframe="d1", ticker="TCH"):
         open_price, close_price, high_price, low_price, volume = latest_data
     else:
         open_price, close_price, high_price, low_price, volume = None, None, None, None, None
+    start_time = start_year
+    end_time = end_year 
+    start_year = datetime(int(start_year), 1, 1, 7, 0, 0).timestamp()
+    end_year = datetime(int(end_year), 1, 1, 7, 0, 0).timestamp()
 
     # cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 100", (ticker,))
-    cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s" , (ticker,))
+    cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s AND time_stamp >= {str(start_year)} AND time_stamp <= {str(end_year)}" , (ticker,))
     records = cur.fetchall()
 
     columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'sum_price']
@@ -97,7 +158,9 @@ def create_cand_chart(timeframe="d1", ticker="TCH"):
     cur.execute("SELECT DISTINCT ticker FROM d1")
     stock_codes = [code[0] for code in cur.fetchall()]
 
-    return render_template("/chart/cand/cand.html", plot_cand=plot_html, ticker=ticker, stock_codes=stock_codes, selected_timeframe=timeframe, open_price=open_price, close_price=close_price, high_price=high_price, low_price=low_price, volume=volume)
+    return render_template("/chart/cand/cand.html", plot_cand=plot_html, ticker=ticker, stock_codes=stock_codes, start_time = start_time, end_time = end_time,
+                           selected_timeframe=timeframe, open_price=open_price, close_price=close_price, high_price=high_price, low_price=low_price, volume=volume)
+
 
 #get 3month
 @app.route('/cand3M/<timeframe>/<ticker>', methods=['GET', 'POST'])
