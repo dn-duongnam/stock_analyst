@@ -810,17 +810,36 @@ def viewIndexMonthIndustry(type_view = "1M"):
         "Tài nguyên cơ bản": "1700",
         "Truyền thông": "5500"
     }
+    selected_industries = ["Bán lẻ", "Bất động sản", "Dầu khí",
+                           "Dịch vụ tài chính", "Điện, nước xăng dầu khí đốt", "Ngân hàng"]
+    if request.method == 'POST':
+        selected_industries = request.form.getlist('industry')
+        if (len(selected_industries) == 0):
+            selected_industries = ["Bán lẻ", "Bất động sản", "Dầu khí",
+                           "Dịch vụ tài chính", "Điện, nước xăng dầu khí đốt", "Ngân hàng"]
+        # return selected_industries;
     
-    json_banle = indexmonthindustry(industry_code = dict_industry_code['Bán lẻ'], type_mode = type_view.upper())
-    # json_banle = json.loads(json_banle)
-    print(json_banle)
-    dat_banle = []
-    dat_banle.append([ str(datetime.strptime(str(elm['s']), "%d/%m/%y %H:%M")) if len(elm['s']) > 8 else
-                       str(datetime.strptime(str(elm['s']), "%d/%m/%y")) for elm in json_banle['body']['data']])
-    dat_banle.append([ elm['i'] for elm in json_banle['body']['data']])
-    dat_banle.append([ elm['v'] for elm in json_banle['body']['data']])
+    dat_json = []
+    for name_industry in selected_industries:
+        dat_tmp = []
+        json_tmp = indexmonthindustry(industry_code = dict_industry_code[name_industry], type_mode = type_view.upper())
+        dat_tmp.append([ str(datetime.strptime(str(elm['s']), "%d/%m/%y %H:%M")) if len(elm['s']) > 8 else
+                        str(datetime.strptime(str(elm['s']), "%d/%m/%y")) for elm in json_tmp['body']['data']])
+        dat_tmp.append([ elm['i'] for elm in json_tmp['body']['data']])
+        dat_tmp.append([ elm['v'] for elm in json_tmp['body']['data']])
+        dat_tmp.append(json_tmp['header']['i'])
+        dat_tmp.append(json_tmp['header']['pct'])
+        dat_tmp.append(name_industry + f" ({json_tmp['header']['pct']}%) ")
+        dat_tmp.append(dict_industry_code[name_industry])
+        dat_tmp.append("rgba(255, 0, 0, 1)" if json_tmp['header']['pct'] < 0 else "rgba(0, 255, 0, 1)")
+        
+        dat_json.append(dat_tmp)
+    
     return render_template("/chart/indexindustry/lineindexindustry.html",
-                           json_banle = dat_banle)
+                           json_data = dat_json,
+                           industry_codes = dict_industry_code,
+                           type_view = type_view,
+                           selected_industries = selected_industries)   
 
 def indexmonthindustry(industry_code = "5300", type_mode = "1M"):
     header = {
@@ -833,9 +852,14 @@ def indexmonthindustry(industry_code = "5300", type_mode = "1M"):
         "Sec-Ch-Ua-Platform": "Windows",
         "User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36 Edg/118.0.2088.76'
     }
-    url = f"https://apipubaws.tcbs.com.vn/stock-insight/v1/intraday/flow-industry-index?exchange=ALL&industry={industry_code}&type={type_mode}"
+    if (type_mode == "1M"):
+        url = f"https://apipubaws.tcbs.com.vn/stock-insight/v1/intraday/flow-industry-index?exchange=ALL&industry={industry_code}&type={type_mode}"
+        response = requests.request("GET", url, headers=header).json()
+        return response
+    
+    url = f"https://apipubaws.tcbs.com.vn/stock-insight/v1/intraday/flow-industry-index?exchange=ALL&industry={industry_code}&type={type_mode.lower()}"
     response = requests.request("GET", url, headers=header).json()
-    return response;
+    return response
     
 if __name__ == "__main__":
     app.run()
