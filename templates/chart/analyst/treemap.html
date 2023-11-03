@@ -37,6 +37,25 @@
                             <input type="radio" name="timeframe" value="monthArray" style="margin-right: 10px;" {% if
                                 selected_timeframe=="monthArray" %}checked{% endif %}>
                             <label for="monthArray">Monthly</label>
+                                <br>
+                            {% for industry, code in industry_codes.items() %}
+                                <div class="col-md-3 col-sm-3">   
+                                    <div class="x_panel">
+                                        <div class="form-check">
+
+                                            {% if industry in selected_industries %}
+                                                <input class="form-check-input" id="flexCheckDefault" type="checkbox" name="industry" value="{{ industry }}" checked>
+                                            {% else %}
+                                                <input class="form-check-input" id="flexCheckDefault" type="checkbox" name="industry" value="{{ industry }}">
+                                            {% endif %}
+                                        <label class="form-check-label" for="flexCheckDefault">
+                                            {{ industry }}
+                                        </label>
+                                    </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+
                             <input type="submit" value="Cập nhật"
                                 style="background-color: #3498db; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">
                         </form>

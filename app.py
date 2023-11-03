@@ -747,6 +747,29 @@ def create_treemap(timeframe="daylyArray"):
     columnName = ['timestamp']
     timestamp_table = pd.DataFrame.from_records(records, columns=columnName)['timestamp'].values
     timestamp_table = np.sort(timestamp_table)
+    
+    dict_industry_code = {
+        "Bán lẻ": "5300",
+        "Bất động sản": "8600",
+        "Dầu khí": "0500",
+        "Dịch vụ tài chính": "8700",
+        "Điện, nước & xăng dầu khí đốt": "7500",
+        "Ngân hàng": "8300",
+        "Viễn thông": "6500",
+        "Xây dựng và Vật liệu": "2300",
+        "Y tế": "4500",
+        "Bảo hiểm": "8500",
+        "Công nghệ Thông tin": "9500",
+        "Du lịch và Giải trí": "5700",
+        "Hàng & Dịch vụ Công nghiệp": "2700",
+        "Hàng cá nhân & Gia dụng": "3700",
+        "Hóa chất": "1300",
+        "Ô tô và phụ tùng": "3300",
+        "Thực phẩm và đồ uống": "3500",
+        "Tài nguyên Cơ bản": "1700",
+        "Truyền thông": "5500"
+    }
+    selected_industries = list(dict_industry_code.keys())
 
     # #day
     # daylyArray = timestamp_table[-2:]
@@ -763,16 +786,24 @@ def create_treemap(timeframe="daylyArray"):
         selected_timeframe = timestamp_table[-31:]
     else:
         return "Khung giờ không hợp lệ"
+    
     if request.method == 'POST':
         selected_timeframe = request.form.get('timeframe')
+        
+        selected_industries = request.form.getlist('industry')
+        print(selected_industries)
+        if (len(selected_industries) == 0):
+            selected_industries = list(dict_industry_code.keys())
+        
         if selected_timeframe == "daylyArray": 
-            return redirect('/treemap/daylyArray')
+            selected_timeframe = timestamp_table[-2:]
         elif selected_timeframe == "weekArray":
-            return redirect('/treemap/weekArray')
+            selected_timeframe = timestamp_table[-8:]
         elif selected_timeframe == "monthArray":
-            return redirect('/treemap/monthArray')
+            selected_timeframe = timestamp_table[-31:]
         else:
             return "Khung giờ không hợp lệ"
+        
     cur.execute("""SELECT * 
     FROM d1
     WHERE d1.time_stamp = %s;
@@ -805,6 +836,8 @@ def create_treemap(timeframe="daylyArray"):
     df = pd.DataFrame.from_records(records, columns=columnName)
 
     data_result = df_price.set_index('ticker').join(df.set_index('ticker'), on='ticker', validate='1:1').reset_index()
+    data_result = data_result[(data_result['industry_name'].isin(selected_industries))]
+    print(data_result['industry_name'].unique())
     data_result['percent'] = pd.to_numeric((data_result['close'] - data_result['close_pr'])/data_result['close_pr'])
     data_result = data_result.fillna(0)
     
@@ -847,7 +880,11 @@ def create_treemap(timeframe="daylyArray"):
     fig_vn30.data[0].texttemplate = "%{label}<br>%{customdata[0]:.2f}%"
     
     plot_vn30 = fig_vn30.to_html(full_html=False)
-    return render_template("/chart/analyst/treemap.html", treemap=plot, plot_vn30 = plot_vn30,selected_timeframe=timeframe)
+    return render_template("/chart/analyst/treemap.html", treemap=plot,
+                           plot_vn30 = plot_vn30,
+                           selected_timeframe=timeframe,
+                           industry_codes = dict_industry_code,
+                           selected_industries = selected_industries)
 # @app.route("/")
 @app.route('/view_indexMonthIndustry/<type_view>', methods=['GET', 'POST'])
 def viewIndexMonthIndustry(type_view = "1M"):
