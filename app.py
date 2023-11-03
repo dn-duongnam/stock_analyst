@@ -737,6 +737,150 @@ def create_mcdx_chart(timeframe="m15", ticker="TCH"):
 
     return render_template("/chart/analyst/mcdx.html", plot_mcdx=plot_html, ticker=ticker, stock_codes=stock_codes, selected_timeframe=timeframe)
 
+@app.route('/mcdx_new/<timeframe>/<ticker>', methods=['GET', 'POST'])
+def create_mcdx_new_chart(timeframe="m15", ticker="TCH"):
+    cur = mysql.connection.cursor()
+
+    if timeframe == "m1":
+        table_name = "m1_intraday_table"
+    elif timeframe == "m15":
+        table_name = "m15_intraday_table"
+    elif timeframe == "h1":
+        table_name = "h1_intraday_table"
+    elif timeframe == "d1":
+        table_name = "d1_intraday_table"
+    else:
+        return "Khung giờ không hợp lệ"
+
+
+    cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s", (ticker,))
+    records = cur.fetchall()
+    columnName = ['ticker', 'time_stamp', 'percent_sheep_buy', 'percent_shark_sell', 'percent_shark_buy', 'percent_wolf_sell', 'percent_wolf_buy', 'percent_sheep_sell', "avg_price", "sum_vol", "order_count"]
+    df_intraday = pd.DataFrame.from_records(records, columns=columnName)
+    df_intraday['time_stamp'] = pd.to_datetime(df_intraday['time_stamp'], unit='s')
+    df_intraday['time'] = df_intraday['time_stamp'].dt.tz_localize('UTC')
+    df_intraday["Sharks"] = (df_intraday["percent_shark_sell"] + df_intraday["percent_shark_buy"]) 
+    df_intraday["Wolfs"] = (df_intraday["percent_wolf_sell"] + df_intraday["percent_wolf_buy"]) 
+    df_intraday["Sheeps"] = (df_intraday["percent_sheep_sell"] + df_intraday["percent_sheep_buy"]) 
+
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        name="Shark",
+        x=df_intraday['time'], y=df_intraday['Sharks'],
+        hoverinfo='x+y',
+        mode='lines',
+        line=dict(width=0.5, color='#990000'),
+        stackgroup='one',
+        groupnorm='percent' # sets the normalization for the sum of the stackgroup
+        
+    ))
+
+    fig.add_trace(go.Scatter(
+        name="Wolf",
+        x=df_intraday['time'], y=df_intraday['Wolfs'],
+        hoverinfo='x+y',
+        mode='lines',
+        line=dict(width=0.5, color='#999900'),
+        stackgroup='one'
+    ))
+
+    fig.add_trace(go.Scatter(
+        name="Sleep",
+        x=df_intraday['time'], y=df_intraday['Sheeps'],
+        hoverinfo='x+y',
+        mode='lines',
+        line=dict(width=0.5, color='#66CC00'),
+        stackgroup='one'
+    ))
+
+    fig.update_xaxes(type='category',
+                        showticklabels=False)
+
+    fig.update_layout(
+        yaxis=dict(
+            type='linear',
+            range=[1, 100],
+            ticksuffix='%'))
+
+    plot_html = fig.to_html(full_html=False)
+    
+    fig_all = go.Figure()
+
+    fig_all.add_trace(go.Scatter(
+        name="Shark sell",
+
+        x=df_intraday['time'], y=df_intraday['percent_shark_sell'],
+        hoverinfo='x+y',
+        mode='lines',
+        line=dict(width=0.5, color='#990000'),
+        stackgroup='one'
+    ))
+
+    fig_all.add_trace(go.Scatter(
+        name="Shark buy",
+        x=df_intraday['time'], y=df_intraday['percent_shark_buy'],
+        hoverinfo='x+y',
+        mode='lines',
+        line=dict(width=0.5, color='#FF3333'),
+        stackgroup='one'
+    ))
+
+    fig_all.add_trace(go.Scatter(
+        name="Wolf sell",
+        x=df_intraday['time'], y=df_intraday['percent_wolf_sell'],
+        hoverinfo='x+y',
+        mode='lines',
+        line=dict(width=0.5, color='#999900'),
+        stackgroup='one'
+    ))
+
+    fig_all.add_trace(go.Scatter(
+        name="Wolf buy",
+        x=df_intraday['time'], y=df_intraday['percent_wolf_buy'],
+        hoverinfo='x+y',
+        mode='lines',
+        line=dict(width=0.5, color='#FFFF33'),
+        stackgroup='one'
+    ))
+
+    fig_all.add_trace(go.Scatter(
+        name="Sleep sell",
+        x=df_intraday['time'], y=df_intraday['percent_sheep_sell'],
+        hoverinfo='x+y',
+        mode='lines',
+        line=dict(width=0.5, color='#66CC00'),
+        stackgroup='one'
+    ))
+
+    fig_all.add_trace(go.Scatter(
+        name="Sleep buy",
+        x=df_intraday['time'], y=df_intraday['percent_sheep_buy'],
+        hoverinfo='x+y',
+        mode='lines',
+        line=dict(width=0.5, color='#00CC66'),
+        stackgroup='one', # define stack group
+        groupnorm='percent' # sets the normalization for the sum of the stackgroup
+    ))
+
+    fig_all.update_xaxes(type='category',
+                        showticklabels=False)
+
+    fig_all.update_layout(
+        yaxis=dict(
+            type='linear',
+            range=[1, 100],
+            ticksuffix='%'))
+    
+    plot_all = fig_all.to_html(full_html=False)
+
+    cur.execute("SELECT DISTINCT ticker FROM d1")
+    stock_codes = [code[0] for code in cur.fetchall()]
+
+    return render_template("/chart/analyst/mcdx_new.html", plot_mcdx=plot_html, plot_mcdx_all=plot_all,ticker=ticker, stock_codes=stock_codes, selected_timeframe=timeframe)
+
+
 @app.route('/treemap/<timeframe>', methods=['GET', 'POST'])
 def create_treemap(timeframe="daylyArray"):
     cur = mysql.connection.cursor()
@@ -1154,6 +1298,234 @@ def overview(ticker = "TCH"):
                            plot_line_quarter=plot_line_quarter, plot_line_month=plot_line_month,plot_trans_values = plot_trans_values,
                            plot_treemap = plot_treemap,plot_his_up = plot_his_up,plot_his_down=plot_his_down,  plot_his_volume= plot_his_volume, plot_his_percent= plot_his_percent,
                            ticker=ticker, stock_codes=stock_codes)
+
+
+@app.route('/treemap_cap/<timeframe>', methods=['GET', 'POST'])
+def create_treemap_cap(timeframe="daylyArray"):
+    cur = mysql.connection.cursor()
+    cur.execute("""
+    SELECT DISTINCT d1.time_stamp FROM d1;
+    """)
+    records = cur.fetchall()
+    columnName = ['timestamp']
+    timestamp_table = pd.DataFrame.from_records(records, columns=columnName)['timestamp'].values
+    timestamp_table = np.sort(timestamp_table)
+
+    if timeframe == "daylyArray":
+        selected_timeframe = timestamp_table[-2:]
+    elif timeframe == "weekArray":
+        selected_timeframe = timestamp_table[-8:]
+    elif timeframe == "monthArray":
+        selected_timeframe = timestamp_table[-31:]
+    else:
+        return "Khung giờ không hợp lệ"
+    if request.method == 'POST':
+        selected_timeframe = request.form.get('timeframe')
+        if selected_timeframe == "daylyArray": 
+            return redirect('/treemap_cap/daylyArray')
+        elif selected_timeframe == "weekArray":
+            return redirect('/treemap_cap/weekArray')
+        elif selected_timeframe == "monthArray":
+            return redirect('/treemap_cap/monthArray')
+        else:
+            return "Khung giờ không hợp lệ"
+    cur.execute("""SELECT * 
+    FROM d1
+    WHERE d1.time_stamp = %s;
+    """, (int(selected_timeframe[0]),))
+    records = cur.fetchall()
+    columnName = ['ticker', 'time_stamp_pr', 'open_pr', 'low_pr', 'high_pr', 'close_pr', 'volume_pr', 'sum_price_pr']
+    df_price_previous = pd.DataFrame.from_records(records, columns=columnName)
     
+    #target
+    # Truy vấn dữ liệu từ SQL
+    cur.execute("""SELECT * 
+    FROM d1
+    WHERE d1.time_stamp = %s;
+    """, (int(selected_timeframe[-1]),))
+    records = cur.fetchall()
+    columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'sum_price']
+    df_price = pd.DataFrame.from_records(records, columns=columnName)
+    df_price = df_price.set_index('ticker').join(df_price_previous.set_index('ticker'), on='ticker', validate='1:1').reset_index()
+    df_price = df_price[['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'close_pr']]
+    #append infomation
+    cur.execute("""SELECT ct.ticker, ct.comGroupCode, ct.organName, ct.organShortName, it.industry_name 
+    FROM company ct
+    JOIN company_subgroup cs ON ct.ticker = cs.id_company
+    JOIN group_subgroup gs ON gs.id_subgroup = cs.id_subgroup
+    JOIN industry_group ig ON ig.id_group = gs.id_group
+    JOIN industry it ON it.id_industry = ig.id_industry
+    """)
+    records = cur.fetchall()
+    columnName = ['ticker', 'comGroupCode', 'organName', 'organShortName', 'industry_name']
+    df = pd.DataFrame.from_records(records, columns=columnName)
+    
+    # Truy vấn dữ liệu từ SQL
+    cur.execute("""
+    SELECT so.ticker, so.total_max_vol
+    FROM stock_out so
+    WHERE so.can_use = 1
+    """)
+    records = cur.fetchall()
+    columnName = ['ticker', 'total_max_vol']
+    df_stock_out = pd.DataFrame.from_records(records, columns=columnName)
+    df = df.set_index('ticker').join(df_stock_out.set_index('ticker'), on='ticker', validate='1:1').reset_index()
+    df_price.set_index('ticker').join(df.set_index('ticker'), on='ticker', validate='1:1').reset_index()
+    data_result = df_price.set_index('ticker').join(df.set_index('ticker'), on='ticker', validate='1:1').reset_index()
+    data_result['percent'] = pd.to_numeric((data_result['close'] - data_result['close_pr'])/data_result['close_pr'])
+    def checkTypeUpdown(x):
+        if x == 0:
+            return '0'
+        if x < 0:
+            if x <= -0.065:
+                return '-2'
+            return '-1'
+        if x >= 0.065:
+            return '2'
+        return '1'
+    data_result['type'] = data_result['percent'].apply(checkTypeUpdown)
+    data_result['TotalMoney'] = (data_result['total_max_vol'] * 1000000 * data_result['close']) / 1000000000
+    
+
+    fig = px.treemap(data_result, path=['industry_name','ticker'],
+                 color='type',
+                 color_discrete_map={'0':'#cd8e1e', '1':'#04c584', '2':'#bc6dd0', '-1':'#d0303d', '-2':'#5499d0','(?)':'#333333'},
+                 hover_data=['percent','organName'],
+                 values='TotalMoney',
+                 )
+    fig.data[0].customdata[:,0] = np.where(fig.data[0].customdata[:,0] != '(?)', fig.data[0].customdata[:,0]*100, '(?)')
+    fig.data[0].texttemplate = "%{label}<br>%{customdata[0]:.2f}%"
+
+    plot = fig.to_html(full_html=False)
+    
+    fig_ex = px.treemap(data_result, path=['comGroupCode','ticker'],
+                 color='type',
+                 color_discrete_map={'0':'#cd8e1e', '1':'#04c584', '2':'#bc6dd0', '-1':'#d0303d', '-2':'#5499d0','(?)':'#333333'},
+                 hover_data=['percent','organName'],
+                 values='TotalMoney',
+                #  width=2000,
+                #  height=1000
+                 )
+    fig_ex.data[0].customdata[:,0] = np.where(fig_ex.data[0].customdata[:,0] != '(?)', fig_ex.data[0].customdata[:,0]*100, '(?)')
+    fig_ex.data[0].texttemplate = "%{label}<br>%{customdata[0]:.2f}%"
+    
+    plot_ex = fig_ex.to_html(full_html=False)
+    return render_template("/chart/analyst/treemap_cap.html", treemap=plot, plot_ex = plot_ex,selected_timeframe=timeframe)
+
+
+
+@app.route('/treemap_values/<timeframe>', methods=['GET', 'POST'])
+def create_treemap_values(timeframe="daylyArray"):
+    cur = mysql.connection.cursor()
+    cur.execute("""
+    SELECT DISTINCT d1.time_stamp FROM d1;
+    """)
+    records = cur.fetchall()
+    columnName = ['timestamp']
+    timestamp_table = pd.DataFrame.from_records(records, columns=columnName)['timestamp'].values
+    timestamp_table = np.sort(timestamp_table)
+
+    if timeframe == "daylyArray":
+        selected_timeframe = timestamp_table[-2:]
+    elif timeframe == "weekArray":
+        selected_timeframe = timestamp_table[-8:]
+    elif timeframe == "monthArray":
+        selected_timeframe = timestamp_table[-31:]
+    else:
+        return "Khung giờ không hợp lệ"
+    if request.method == 'POST':
+        selected_timeframe = request.form.get('timeframe')
+        if selected_timeframe == "daylyArray": 
+            return redirect('/treemap_values/daylyArray')
+        elif selected_timeframe == "weekArray":
+            return redirect('/treemap_values/weekArray')
+        elif selected_timeframe == "monthArray":
+            return redirect('/treemap_values/monthArray')
+        else:
+            return "Khung giờ không hợp lệ"
+    cur.execute("""SELECT * 
+    FROM d1
+    WHERE d1.time_stamp = %s;
+    """, (int(selected_timeframe[0]),))
+    records = cur.fetchall()
+    columnName = ['ticker', 'time_stamp_pr', 'open_pr', 'low_pr', 'high_pr', 'close_pr', 'volume_pr', 'sum_price_pr']
+    df_price_previous = pd.DataFrame.from_records(records, columns=columnName)
+    
+    #target
+    # Truy vấn dữ liệu từ SQL
+    cur.execute("""SELECT * 
+    FROM d1
+    WHERE d1.time_stamp = %s;
+    """, (int(selected_timeframe[-1]),))
+    records = cur.fetchall()
+    columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'sum_price']
+    df_price = pd.DataFrame.from_records(records, columns=columnName)
+    df_price = df_price.set_index('ticker').join(df_price_previous.set_index('ticker'), on='ticker', validate='1:1').reset_index()
+    df_price = df_price[['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'close_pr']]
+    #append infomation
+    cur.execute("""SELECT ct.ticker, ct.comGroupCode, ct.organName, ct.organShortName, it.industry_name 
+    FROM company ct
+    JOIN company_subgroup cs ON ct.ticker = cs.id_company
+    JOIN group_subgroup gs ON gs.id_subgroup = cs.id_subgroup
+    JOIN industry_group ig ON ig.id_group = gs.id_group
+    JOIN industry it ON it.id_industry = ig.id_industry
+    """)
+    records = cur.fetchall()
+    columnName = ['ticker', 'comGroupCode', 'organName', 'organShortName', 'industry_name']
+    df = pd.DataFrame.from_records(records, columns=columnName)
+    
+    # Truy vấn dữ liệu từ SQL
+    cur.execute("""
+    SELECT d1.ticker, AVG(d1.close) * SUM(d1.volume)
+    FROM d1
+    WHERE d1.time_stamp >= %s AND d1.time_stamp <= %s
+    GROUP BY d1.ticker;
+    """, (int(selected_timeframe[0]), int(selected_timeframe[-1])))
+
+    records = cur.fetchall()
+    columnName = ['ticker', 'value_trans']
+    df_vol_trans = pd.DataFrame.from_records(records, columns=columnName)
+    df = df.set_index('ticker').join(df_vol_trans.set_index('ticker'), on='ticker', validate='1:1').reset_index()
+    df_price.set_index('ticker').join(df.set_index('ticker'), on='ticker', validate='1:1').reset_index()
+    
+    data_result = df_price.set_index('ticker').join(df.set_index('ticker'), on='ticker', validate='1:1').reset_index()
+    data_result['percent'] = pd.to_numeric((data_result['close'] - data_result['close_pr'])/data_result['close_pr'])
+    def checkTypeUpdown(x):
+        if x == 0:
+            return '0'
+        if x < 0:
+            if x <= -0.065:
+                return '-2'
+            return '-1'
+        if x >= 0.065:
+            return '2'
+        return '1'
+    data_result['type'] = data_result['percent'].apply(checkTypeUpdown)
+    data_result['TotalMoneyTrans'] = data_result['value_trans']  / 1000000000
+    
+    fig = px.treemap(data_result, path=['industry_name','ticker'],
+                 color='type',
+                 color_discrete_map={'0':'#cd8e1e', '1':'#04c584', '2':'#bc6dd0', '-1':'#d0303d', '-2':'#5499d0','(?)':'#333333'},
+                 hover_data=['percent','organName', 'TotalMoneyTrans'],
+                 values='TotalMoneyTrans',
+                 )
+    fig.data[0].customdata[:,0] = np.where(fig.data[0].customdata[:,0] != '(?)', fig.data[0].customdata[:,0]*100, '(?)')
+    fig.data[0].texttemplate = "%{label}<br>%{customdata[0]:.2f}%"
+    plot = fig.to_html(full_html=False)
+    
+    fig_ex = px.treemap(data_result, path=['comGroupCode','ticker'],
+                 color='type',
+                 color_discrete_map={'0':'#cd8e1e', '1':'#04c584', '2':'#bc6dd0', '-1':'#d0303d', '-2':'#5499d0','(?)':'#333333'},
+                 hover_data=['percent','organName', 'TotalMoneyTrans'],
+                 values='TotalMoneyTrans',
+                #  width=2000,
+                #  height=1000
+                 )
+    fig_ex.data[0].customdata[:,0] = np.where(fig_ex.data[0].customdata[:,0] != '(?)', fig_ex.data[0].customdata[:,0]*100, '(?)')
+    fig_ex.data[0].texttemplate = "%{label}<br>%{customdata[0]:.2f}%"
+    plot_ex = fig_ex.to_html(full_html=False)
+    
+
+    return render_template("/chart/analyst/treemap_values.html", treemap=plot, plot_ex = plot_ex,selected_timeframe=timeframe)
 if __name__ == "__main__":
     app.run()

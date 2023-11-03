@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %} Bản đồ nhiệt {% endblock title %}
+{% block content %}
+<!-- page content -->
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <div class="row" style="display: inline-block;">
+    </div>
+    <!-- /top tiles -->
+
+    <div class="row">
+        <div class="col-md-12 col-sm-12 ">
+            <div class="dashboard_graph">
+
+                <div class="row x_title">
+                    <div class="col-md-6">
+                        <h3>Bản đồ nhiệt theo giá trị giao dịch</h3>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="reportrange" class="pull-right"
+                            style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
+                            <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
+                            <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12 col-sm-12 ">
+                    <div>
+                        <form method="post">
+                            <input type="radio" name="timeframe" value="daylyArray" style="margin-right: 10px;" {% if
+                                selected_timeframe=="daylyArray" %}checked{% endif %}>
+                            <label for="daylyArray">Daily</label>
+                            <input type="radio" name="timeframe" value="weekArray" style="margin-right: 10px;" {% if
+                                selected_timeframe=="weekArray" %}checked{% endif %}>
+                            <label for="weekArray">Weekly</label>
+                            <input type="radio" name="timeframe" value="monthArray" style="margin-right: 10px;" {% if
+                                selected_timeframe=="monthArray" %}checked{% endif %}>
+                            <label for="monthArray">Monthly</label>
+                            <input type="submit" value="Cập nhật"
+                                style="background-color: #3498db; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">
+                        </form>
+
+
+
+
+                        <div style="margin-top: 20px; border: 1px solid #ccc; padding: 20px; border-radius: 5px; transition: transform 0.2s;"
+                            onmouseover="this.style.transform='scale(1.02)';"
+                            onmouseout="this.style.transform='scale(1)';">
+                            {{ treemap | safe }}
+                        </div>
+                        <div style="margin-top: 20px; border: 1px solid #ccc; padding: 20px; border-radius: 5px; transition: transform 0.2s;"
+                            onmouseover="this.style.transform='scale(1.02)';"
+                            onmouseout="this.style.transform='scale(1)';">
+                            {{ plot_ex | safe }}
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock  %}
