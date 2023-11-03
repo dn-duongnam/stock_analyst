@@ -873,8 +873,10 @@ def viewIndexMonthIndustry(type_view = "1M"):
         "Tài nguyên cơ bản": "1700",
         "Truyền thông": "5500"
     }
-    selected_industries = ["Bán lẻ", "Bất động sản", "Dầu khí",
-                           "Dịch vụ tài chính", "Điện, nước xăng dầu khí đốt", "Ngân hàng"]
+    selected_industries = ["Bán lẻ", 
+                           "Bất động sản", "Dầu khí",
+                           "Dịch vụ tài chính", "Điện, nước xăng dầu khí đốt",
+                           "Ngân hàng"]
     if request.method == 'POST':
         selected_industries = request.form.getlist('industry')
         if (len(selected_industries) == 0):
@@ -891,6 +893,8 @@ def viewIndexMonthIndustry(type_view = "1M"):
         dat_tmp.append([ elm['i'] for elm in json_tmp['body']['data']])
         dat_tmp.append([ elm['v'] for elm in json_tmp['body']['data']])
         dat_tmp.append(json_tmp['header']['i'])
+        if (json_tmp['header']['pct'] == None):
+            return redirect(url_for('viewIndexMonthIndustry', type_view = "1M"))
         dat_tmp.append(json_tmp['header']['pct'])
         dat_tmp.append(name_industry + f" ({json_tmp['header']['pct']}%) ")
         dat_tmp.append(dict_industry_code[name_industry])
