@@ -34,7 +34,7 @@ app.config['MYSQL_DATABASE_AUTH_PLUGIN'] = 'mysql_native_password'
 mysql = MySQL(app)
 
 #D1
-@app.route("/")
+
 # @app.route("/")
 # @app.route('/cand/<timeframe>/<ticker>', methods=['GET', 'POST'])
 # def create_cand_chart(timeframe="d1", ticker="TCH"):
@@ -95,7 +95,7 @@ mysql = MySQL(app)
 #     stock_codes = [code[0] for code in cur.fetchall()]
 
 #     return render_template("/chart/cand/cand.html", plot_cand=plot_html, ticker=ticker, stock_codes=stock_codes, selected_timeframe=timeframe, open_price=open_price, close_price=close_price, high_price=high_price, low_price=low_price, volume=volume)
-
+# @app.route("/")
 @app.route('/cand/<timeframe>/<ticker>/<start_year>/<end_year>', methods=['GET', 'POST'])
 def create_cand1Y_chart(timeframe="d1", ticker="TCH", start_year = 2016, end_year = 2023):
     cur = mysql.connection.cursor()
@@ -848,7 +848,7 @@ def create_treemap(timeframe="daylyArray"):
     
     plot_vn30 = fig_vn30.to_html(full_html=False)
     return render_template("/chart/analyst/treemap.html", treemap=plot, plot_vn30 = plot_vn30,selected_timeframe=timeframe)
-
+# @app.route("/")
 @app.route('/view_indexMonthIndustry/<type_view>', methods=['GET', 'POST'])
 def viewIndexMonthIndustry(type_view = "1M"):
     
@@ -923,6 +923,233 @@ def indexmonthindustry(industry_code = "5300", type_mode = "1M"):
     url = f"https://apipubaws.tcbs.com.vn/stock-insight/v1/intraday/flow-industry-index?exchange=ALL&industry={industry_code}&type={type_mode.lower()}"
     response = requests.request("GET", url, headers=header).json()
     return response
+
+@app.route("/")
+@app.route('/overview/<ticker>', methods=['GET', 'POST'])
+def overview(ticker = "TCH"):
+    cur = mysql.connection.cursor()
+        
+    # Truy vấn dữ liệu từ SQL
+    cur.execute("""SELECT * 
+    FROM d1
+    WHERE d1.ticker = %s;
+    """, (ticker,))
+    records = cur.fetchall()
+    columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'sum_price']
+    df_price = pd.DataFrame.from_records(records, columns=columnName)
+    df_price['time_stamp'] = pd.to_datetime(df_price['time_stamp'], unit='s')
+    df_price['time'] = df_price['time_stamp'].dt.tz_localize('UTC').dt.tz_convert('Asia/Ho_Chi_Minh')
+    df_price['year'] = df_price['time'].dt.year
+    df_price['month'] = df_price['time'].dt.month
+    df_price['day'] = df_price['time'].dt.day
+    df_price['quarter'] = df_price['time'].dt.quarter
+    df_price.groupby('year').agg({
+    'open':'mean',
+    'close':'mean',
+    'high':'mean',
+    'low':'mean',
+    })
+    year_df = df_price.groupby('year').agg({
+                'open':'mean',
+                'close':'mean',
+                'high':'mean',
+                'low':'mean',
+            }).reset_index()
+
+    fig_line_year = go.Figure()
+    fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
+    fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
+    fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
+    fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
+    fig_line_year.add_hline(y=year_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
+    fig_line_year.update_traces(textposition="bottom right")
+    plot_line_year = fig_line_year.to_html(full_html=False)
+    
+    #-------------------------------------------------------------------------------------------------------------------------
+    day_df = df_price.groupby('day').agg({
+                'open':'mean',
+                'close':'mean',
+                'high':'mean',
+                'low':'mean',
+            }).reset_index()
+
+    fig_line_day = go.Figure()
+    fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
+    fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
+    fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
+    fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
+    fig_line_day.add_hline(y=day_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
+    fig_line_day.update_traces(textposition="bottom right")
+    plot_line_day = fig_line_day.to_html(full_html=False)
+
+    #---------------------------------------------------------------------------------------------------------------------------
+    
+    quarter_df = df_price.groupby('quarter').agg({
+                'open':'mean',
+                'close':'mean',
+                'high':'mean',
+                'low':'mean',
+            }).reset_index()
+
+    fig_line_quarter = go.Figure()
+    fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
+    fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
+    fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
+    fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
+    fig_line_quarter.add_hline(y=day_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
+    fig_line_quarter.update_traces(textposition="bottom right")
+    
+    plot_line_quarter = fig_line_quarter.to_html(full_html=False)
+    
+    #--------------------------------------------------------------------------------------------------------------------------------
+    month_df = df_price.groupby('month').agg({
+                'open':'mean',
+                'close':'mean',
+                'high':'mean',
+                'low':'mean',
+            }).reset_index()
+
+    fig_line_month = go.Figure()
+    fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
+    fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
+    fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
+    fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
+    fig_line_month.add_hline(y=month_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
+    fig_line_month.update_traces(textposition="bottom right")
+    plot_line_month = fig_line_month.to_html(full_html=False)
+    
+    #---------------------------------------------------------------------------------------------------------------------------------
+    
+    cur.execute("""
+    SELECT DISTINCT d1.time_stamp FROM d1;
+    """)
+    records = cur.fetchall()
+    columnName = ['timestamp']
+    timestamp_table = pd.DataFrame.from_records(records, columns=columnName)['timestamp'].values
+    timestamp_table = np.sort(timestamp_table)
+    daylyArray = timestamp_table[-2:]
+    
+    # Truy vấn dữ liệu từ SQL
+    cur.execute("""SELECT * 
+    FROM d1
+    WHERE d1.time_stamp = %s;
+    """, (int(daylyArray[0]),))
+    records = cur.fetchall()
+    columnName = ['ticker', 'time_stamp_pr', 'open_pr', 'low_pr', 'high_pr', 'close_pr', 'volume_pr', 'sum_price_pr']
+    df_price_previous = pd.DataFrame.from_records(records, columns=columnName)
+    
+        # Truy vấn dữ liệu từ SQL
+    cur.execute("""SELECT * 
+    FROM d1
+    WHERE d1.time_stamp = %s;
+    """, (int(daylyArray[1]),))
+    records = cur.fetchall()
+    columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'sum_price']
+    df_price = pd.DataFrame.from_records(records, columns=columnName)
+    df_price = df_price.set_index('ticker').join(df_price_previous.set_index('ticker'), on='ticker', validate='1:1').reset_index()
+    df_price = df_price[['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'close_pr']]
+    # Truy vấn dữ liệu từ SQL
+    cur.execute("""SELECT ct.ticker, ct.comGroupCode, ct.organName, ct.organShortName, it.industry_name 
+    FROM company ct
+    JOIN company_subgroup cs ON ct.ticker = cs.id_company
+    JOIN group_subgroup gs ON gs.id_subgroup = cs.id_subgroup
+    JOIN industry_group ig ON ig.id_group = gs.id_group
+    JOIN industry it ON it.id_industry = ig.id_industry
+    """)
+    records = cur.fetchall()
+    columnName = ['ticker', 'comGroupCode', 'organName', 'organShortName', 'industry_name']
+    df = pd.DataFrame.from_records(records, columns=columnName)
+    df_price.set_index('ticker').join(df.set_index('ticker'), on='ticker', validate='1:1').reset_index().head(2)
+    data_day = df_price.set_index('ticker').join(df.set_index('ticker'), on='ticker', validate='1:1').reset_index()
+    data_day['percent'] = pd.to_numeric((data_day['close'] - data_day['close_pr'])/data_day['close_pr']) * 100
+    data_day['total_price'] = ((data_day['close_pr'] + data_day['close']) * data_day['volume']) / 2000000000  
+    fig_trans_values = px.pie(data_day,
+             values='total_price',
+             names='industry_name',
+             title='Giá trị giao dịch trong ngày',
+             hover_data = ['percent'],
+            #  hole = 0.2
+             )
+
+    fig_trans_values.update_traces(hoverinfo='label+percent+name')
+    fig_trans_values.update_traces(textposition='inside')
+    fig_trans_values.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    plot_trans_values = fig_trans_values.to_html(full_html=False)
+
+    #----------------------------------------------------------------------------------------------------------------------------------
+    fig_treemap = px.treemap(data_day.sort_values(by='volume', ascending=False).head(20), path=['ticker'],
+                 color='ticker',
+                 hover_data=['volume','percent','organName'],
+                 values='volume',
+                 )
+    fig_treemap.data[0].texttemplate = "%{label}<br>%{customdata[0]:.2d} bn"
+    plot_treemap = fig_treemap.to_html(full_html=False)
+    
+    #-----------------------------------------------------------------------------------------------------------------------------
+    fig_up = px.bar(data_day.sort_values(by='percent', ascending=False).head(10).sort_values(by='percent', ascending=True),
+             x="percent",
+             y="ticker",
+             text='percent',
+             orientation='h',
+             title='Tăng nhiều nhất trong ngày',
+             hover_data=['organName','close'])
+    fig_up.update_layout(xaxis={'categoryorder':'total descending'})
+    fig_up.update_traces(texttemplate='%{text:.2s}%', textposition='outside')
+    fig_up.update_traces(marker_color='#34c6bb')
+    plot_his_up = fig_up.to_html(full_html=False)
+    
+    #------------------------------------------------------------------------------------------------------------------------------
+    fig_down = px.bar(data_day.sort_values(by='percent', ascending=True).head(10).sort_values(by='percent', ascending=False),
+             x="percent",
+             y="ticker",
+             text='percent',
+             orientation='h',
+             title='Giảm nhiều nhất trong ngày',
+             hover_data=['organName','close'])
+    fig_down.update_layout(xaxis={'categoryorder':'total descending'})
+    fig_down.update_traces(texttemplate='%{text:.2s}%', textposition='outside')
+    fig_down.update_traces(marker_color='#fd817e')
+    plot_his_down = fig_down.to_html(full_html=False)
+
+    #--------------------------------------------------------------------------------------------------------------------------------
+    data_day_indus = data_day.groupby('industry_name').agg({
+    'volume':'sum',
+    'percent':'mean'
+    }).reset_index()
+    data_day_indus['volume'] /= 1000000
+    data_day_indus['type'] = data_day_indus['percent'] > 0
+    fig_volume = px.bar(data_day_indus,
+             x="volume",
+             y="industry_name",
+             text='volume',
+             orientation='h',
+             title='Khối lượng giao dịch trong ngày')
+    fig_volume.update_layout(yaxis={'categoryorder':'total ascending'})
+    fig_volume.update_traces(texttemplate='%{text:.2f}tr', textposition='outside')
+    fig_volume.update_traces(marker_color='#34c6bb')
+    plot_his_volume = fig_volume.to_html(full_html=False)
+    
+    #--------------------------------------------------------------------------------------------------------------------------------
+    fig_percent = px.bar(data_day_indus,
+             x="percent",
+             y="industry_name",
+             text='percent',
+             orientation='h',
+             color='type',
+             title='% Biến động giá trong ngày')
+    fig_percent.update_layout(yaxis={'categoryorder':'total ascending'})
+    fig_percent.update_traces(texttemplate='%{text:.2f}%', textposition='outside') 
+    plot_his_percent = fig_percent.to_html(full_html=False)
+        
+    #--------------------------------------------------------------------------------------------------------------------------------
+    cur.execute("SELECT DISTINCT ticker FROM d1")
+    stock_codes = [code[0] for code in cur.fetchall()]
+    
+
+    return render_template("/chart/overview/overview.html", plot_line_year=plot_line_year,plot_line_day=plot_line_day, 
+                           plot_line_quarter=plot_line_quarter, plot_line_month=plot_line_month,plot_trans_values = plot_trans_values,
+                           plot_treemap = plot_treemap,plot_his_up = plot_his_up,plot_his_down=plot_his_down,  plot_his_volume= plot_his_volume, plot_his_percent= plot_his_percent,
+                           ticker=ticker, stock_codes=stock_codes)
     
 if __name__ == "__main__":
     app.run()
