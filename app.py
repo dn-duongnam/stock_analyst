@@ -874,11 +874,21 @@ def create_mcdx_new_chart(timeframe="m15", ticker="TCH"):
             ticksuffix='%'))
     
     plot_all = fig_all.to_html(full_html=False)
+    
+    labels = ['Sheeps','Wolf','Shark']
+    values = [df_intraday['percent_sheep_buy'].values[0], df_intraday['percent_wolf_buy'].values[0], df_intraday['percent_shark_buy'].values[0]]
+    fig_pie_buy = go.Figure(data=[go.Pie(labels=labels, values=values)])
+    plot_pie_buy = fig_pie_buy.to_html(full_html=False)
+    labels = ['Sheeps','Wolf','Shark']
+    values = [df_intraday['percent_sheep_sell'].values[0], df_intraday['percent_wolf_sell'].values[0], df_intraday['percent_shark_sell'].values[0]]
+    fig_pie_sell = go.Figure(data=[go.Pie(labels=labels, values=values)])
+    plot_pie_sell = fig_pie_sell.to_html(full_html=False)
 
     cur.execute("SELECT DISTINCT ticker FROM d1")
     stock_codes = [code[0] for code in cur.fetchall()]
 
-    return render_template("/chart/analyst/mcdx_new.html", plot_mcdx=plot_html, plot_mcdx_all=plot_all,ticker=ticker, stock_codes=stock_codes, selected_timeframe=timeframe)
+    return render_template("/chart/analyst/mcdx_new.html", plot_mcdx=plot_html, plot_mcdx_all=plot_all,ticker=ticker, plot_pie_buy = plot_pie_buy,
+                            plot_pie_sell = plot_pie_sell,stock_codes=stock_codes, selected_timeframe=timeframe)
 
 
 @app.route('/treemap/<timeframe>', methods=['GET', 'POST'])
