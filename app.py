@@ -26,7 +26,7 @@ app.secret_key = 'Duong Nam'
 # app.config['MYSQL_DATABASE_AUTH_PLUGIN'] = 'mysql_native_password'
 
 app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_PORT'] = 3308
+app.config['MYSQL_PORT'] = 3306
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'stock_db'
@@ -723,7 +723,7 @@ def create_mcdx_chart(timeframe="m15", ticker="TCH"):
     # Tạo biểu đồ cột thanh miền
     fig = px.bar(df, x='time', y=["Sharks", "Wolfs", "Sheeps"],
                 labels={'variable': 'Class', 'value': 'Value'},
-                title='Biểu đồ cột thanh miền',
+                title='Biểu đồ MCDX cho dữ liệu khớp lệnh',
                 barmode='relative',
                 color_discrete_sequence=['#ef5350','#fdff06', '#42ad39'])
     fig.add_trace(go.Scatter(x=df['time'], y=df['5_day_sma'], mode='lines', name='MA(5)', line=dict(color='#2196f3',  width = 3)))
@@ -771,7 +771,7 @@ def create_mcdx_new_chart(timeframe="m15", ticker="TCH"):
         x=df_intraday['time'], y=df_intraday['Sharks'],
         hoverinfo='x+y',
         mode='lines',
-        line=dict(width=0.5, color='#990000'),
+        line=dict(width=0.5, color='#ef5350'),
         stackgroup='one',
         groupnorm='percent' # sets the normalization for the sum of the stackgroup
         
@@ -782,7 +782,7 @@ def create_mcdx_new_chart(timeframe="m15", ticker="TCH"):
         x=df_intraday['time'], y=df_intraday['Wolfs'],
         hoverinfo='x+y',
         mode='lines',
-        line=dict(width=0.5, color='#999900'),
+        line=dict(width=0.5, color='#fdff06'),
         stackgroup='one'
     ))
 
@@ -791,7 +791,7 @@ def create_mcdx_new_chart(timeframe="m15", ticker="TCH"):
         x=df_intraday['time'], y=df_intraday['Sheeps'],
         hoverinfo='x+y',
         mode='lines',
-        line=dict(width=0.5, color='#66CC00'),
+        line=dict(width=0.5, color='#42ad39'),
         stackgroup='one'
     ))
 
@@ -802,7 +802,8 @@ def create_mcdx_new_chart(timeframe="m15", ticker="TCH"):
         yaxis=dict(
             type='linear',
             range=[1, 100],
-            ticksuffix='%'))
+            ticksuffix='%'),
+        title=dict(text="Biểu đồ MCDX cho dữ liệu khớp lệnh"))
 
     plot_html = fig.to_html(full_html=False)
     
@@ -871,7 +872,8 @@ def create_mcdx_new_chart(timeframe="m15", ticker="TCH"):
         yaxis=dict(
             type='linear',
             range=[1, 100],
-            ticksuffix='%'))
+            ticksuffix='%'),
+        title=dict(text="Biểu đồ MCDX cho dữ liệu khớp lệnh (phân loại lệnh)"))
     
     plot_all = fig_all.to_html(full_html=False)
     
@@ -1014,6 +1016,7 @@ def create_treemap(timeframe="daylyArray"):
                     color='type',
                     color_discrete_map={'0':'#cd8e1e', '1':'#04c584', '2':'#bc6dd0', '-1':'#d0303d', '-2':'#5499d0','(?)':'#333333'},
                     hover_data=['percent','organName'],
+                    title="Nhiệt đồ theo khối lượng giao dịch và % giá tăng giảm (Theo ngành)"
                     )
 
     fig.data[0].customdata[:,0] = np.where(fig.data[0].customdata[:,0] != '(?)', fig.data[0].customdata[:,0]*100, '(?)')
@@ -1026,6 +1029,7 @@ def create_treemap(timeframe="daylyArray"):
                  color_discrete_map={'0':'#cd8e1e', '1':'#04c584', '2':'#bc6dd0', '-1':'#d0303d', '-2':'#5499d0','(?)':'#333333'},
                  hover_data=['percent','organName'],
                  values='volume',
+                 title="Nhiệt đồ theo khối lượng giao dịch và % giá tăng giảm (Theo sàn)"
                 #  width=2000,
                 #  height=1000
                  )
@@ -1275,6 +1279,7 @@ def overview(ticker = "TCH"):
                  color='ticker',
                  hover_data=['volume','percent','organName'],
                  values='volume',
+                 title='Các mã có khối lượng giao dịch lớn trong ngày',
                  )
     fig_treemap.data[0].texttemplate = "%{label}<br>%{customdata[0]:.2d} bn"
     plot_treemap = fig_treemap.to_html(full_html=False)
@@ -1435,6 +1440,9 @@ def overview_one(ticker="TCH"):
     fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
     fig_line_year.add_hline(y=year_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
     fig_line_year.update_traces(textposition="bottom right")
+    fig_line_year.update_layout(
+        title=dict(text="Biểu đồ trung bình giá theo năm")
+    )
     plot_line_year = fig_line_year.to_html(full_html=False)
     
     #-------------------------------------------------------------------------------------------------------------------------
@@ -1452,6 +1460,9 @@ def overview_one(ticker="TCH"):
     fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
     fig_line_day.add_hline(y=day_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
     fig_line_day.update_traces(textposition="bottom right")
+    fig_line_day.update_layout(
+        title=dict(text="Biểu đồ trung bình giá theo ngày trong tháng")
+    )
     plot_line_day = fig_line_day.to_html(full_html=False)
 
     #---------------------------------------------------------------------------------------------------------------------------
@@ -1470,7 +1481,9 @@ def overview_one(ticker="TCH"):
     fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
     fig_line_quarter.add_hline(y=day_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
     fig_line_quarter.update_traces(textposition="bottom right")
-    
+    fig_line_quarter.update_layout(
+        title=dict(text="Biểu đồ trung bình giá theo quý")
+    )
     plot_line_quarter = fig_line_quarter.to_html(full_html=False)
     
     #--------------------------------------------------------------------------------------------------------------------------------
@@ -1488,6 +1501,9 @@ def overview_one(ticker="TCH"):
     fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
     fig_line_month.add_hline(y=month_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
     fig_line_month.update_traces(textposition="bottom right")
+    fig_line_month.update_layout(
+        title=dict(text="Biểu đồ trung bình giá theo tháng")
+    )
     plot_line_month = fig_line_month.to_html(full_html=False)
     
 
@@ -1623,6 +1639,7 @@ def create_treemap_cap(timeframe="daylyArray"):
                  color_discrete_map={'0':'#cd8e1e', '1':'#04c584', '2':'#bc6dd0', '-1':'#d0303d', '-2':'#5499d0','(?)':'#333333'},
                  hover_data=['percent','organName'],
                  values='TotalMoney',
+                 title="Nhiệt đồ theo vốn hóa thị trường và % giá tăng giảm (Theo ngành)"
                  )
     fig.data[0].customdata[:,0] = np.where(fig.data[0].customdata[:,0] != '(?)', fig.data[0].customdata[:,0]*100, '(?)')
     fig.data[0].texttemplate = "%{label}<br>%{customdata[0]:.2f}%"
@@ -1634,6 +1651,7 @@ def create_treemap_cap(timeframe="daylyArray"):
                  color_discrete_map={'0':'#cd8e1e', '1':'#04c584', '2':'#bc6dd0', '-1':'#d0303d', '-2':'#5499d0','(?)':'#333333'},
                  hover_data=['percent','organName'],
                  values='TotalMoney',
+                 title="Nhiệt đồ theo vốn hóa thị trường và % giá tăng giảm (Theo sàn)"
                 #  width=2000,
                 #  height=1000
                  )
@@ -1772,6 +1790,7 @@ def create_treemap_values(timeframe="daylyArray"):
                  color_discrete_map={'0':'#cd8e1e', '1':'#04c584', '2':'#bc6dd0', '-1':'#d0303d', '-2':'#5499d0','(?)':'#333333'},
                  hover_data=['percent','organName', 'TotalMoneyTrans'],
                  values='TotalMoneyTrans',
+                 title="Nhiệt đồ theo giá trị giao dịch và % giá tăng giảm (Theo ngành)"
                  )
     fig.data[0].customdata[:,0] = np.where(fig.data[0].customdata[:,0] != '(?)', fig.data[0].customdata[:,0]*100, '(?)')
     fig.data[0].texttemplate = "%{label}<br>%{customdata[0]:.2f}%"
@@ -1782,6 +1801,8 @@ def create_treemap_values(timeframe="daylyArray"):
                  color_discrete_map={'0':'#cd8e1e', '1':'#04c584', '2':'#bc6dd0', '-1':'#d0303d', '-2':'#5499d0','(?)':'#333333'},
                  hover_data=['percent','organName', 'TotalMoneyTrans'],
                  values='TotalMoneyTrans',
+                 title="Nhiệt đồ theo giá trị giao dịch và % giá tăng giảm (Theo sàn)"
+                 
                 #  width=2000,
                 #  height=1000
                  )
