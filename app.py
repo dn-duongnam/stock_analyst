@@ -991,7 +991,6 @@ def create_treemap(timeframe="daylyArray"):
 
     data_result = df_price.set_index('ticker').join(df.set_index('ticker'), on='ticker', validate='1:1').reset_index()
     data_result = data_result[(data_result['industry_name'].isin(selected_industries))]
-    print(data_result['industry_name'].unique())
     data_result['percent'] = pd.to_numeric((data_result['close'] - data_result['close_pr'])/data_result['close_pr'])
     data_result = data_result.fillna(0)
     
@@ -1357,6 +1356,29 @@ def create_treemap_cap(timeframe="daylyArray"):
     columnName = ['timestamp']
     timestamp_table = pd.DataFrame.from_records(records, columns=columnName)['timestamp'].values
     timestamp_table = np.sort(timestamp_table)
+    
+    dict_industry_code = {
+        "Bán lẻ": "5300",
+        "Bất động sản": "8600",
+        "Dầu khí": "0500",
+        "Dịch vụ tài chính": "8700",
+        "Điện, nước & xăng dầu khí đốt": "7500",
+        "Ngân hàng": "8300",
+        "Viễn thông": "6500",
+        "Xây dựng và Vật liệu": "2300",
+        "Y tế": "4500",
+        "Bảo hiểm": "8500",
+        "Công nghệ Thông tin": "9500",
+        "Du lịch và Giải trí": "5700",
+        "Hàng & Dịch vụ Công nghiệp": "2700",
+        "Hàng cá nhân & Gia dụng": "3700",
+        "Hóa chất": "1300",
+        "Ô tô và phụ tùng": "3300",
+        "Thực phẩm và đồ uống": "3500",
+        "Tài nguyên Cơ bản": "1700",
+        "Truyền thông": "5500"
+    }
+    selected_industries = list(dict_industry_code.keys())
 
     if timeframe == "daylyArray":
         selected_timeframe = timestamp_table[-2:]
@@ -1366,14 +1388,21 @@ def create_treemap_cap(timeframe="daylyArray"):
         selected_timeframe = timestamp_table[-31:]
     else:
         return "Khung giờ không hợp lệ"
+    
     if request.method == 'POST':
         selected_timeframe = request.form.get('timeframe')
+        
+        selected_industries = request.form.getlist('industry')
+        print(selected_industries)
+        if (len(selected_industries) == 0):
+            selected_industries = list(dict_industry_code.keys())
+        
         if selected_timeframe == "daylyArray": 
-            return redirect('/treemap_cap/daylyArray')
+            selected_timeframe = timestamp_table[-2:]
         elif selected_timeframe == "weekArray":
-            return redirect('/treemap_cap/weekArray')
+            selected_timeframe = timestamp_table[-8:]
         elif selected_timeframe == "monthArray":
-            return redirect('/treemap_cap/monthArray')
+            selected_timeframe = timestamp_table[-31:]
         else:
             return "Khung giờ không hợp lệ"
     cur.execute("""SELECT * 
@@ -1419,6 +1448,7 @@ def create_treemap_cap(timeframe="daylyArray"):
     df = df.set_index('ticker').join(df_stock_out.set_index('ticker'), on='ticker', validate='1:1').reset_index()
     df_price.set_index('ticker').join(df.set_index('ticker'), on='ticker', validate='1:1').reset_index()
     data_result = df_price.set_index('ticker').join(df.set_index('ticker'), on='ticker', validate='1:1').reset_index()
+    data_result = data_result[(data_result['industry_name'].isin(selected_industries))]
     data_result['percent'] = pd.to_numeric((data_result['close'] - data_result['close_pr'])/data_result['close_pr'])
     def checkTypeUpdown(x):
         if x == 0:
@@ -1457,7 +1487,11 @@ def create_treemap_cap(timeframe="daylyArray"):
     fig_ex.data[0].texttemplate = "%{label}<br>%{customdata[0]:.2f}%"
     
     plot_ex = fig_ex.to_html(full_html=False)
-    return render_template("/chart/analyst/treemap_cap.html", treemap=plot, plot_ex = plot_ex,selected_timeframe=timeframe)
+    return render_template("/chart/analyst/treemap_cap.html", treemap=plot,
+                           plot_ex = plot_ex,
+                           selected_timeframe=timeframe,
+                           industry_codes = dict_industry_code,
+                           selected_industries = selected_industries)
 
 
 
@@ -1471,6 +1505,29 @@ def create_treemap_values(timeframe="daylyArray"):
     columnName = ['timestamp']
     timestamp_table = pd.DataFrame.from_records(records, columns=columnName)['timestamp'].values
     timestamp_table = np.sort(timestamp_table)
+    
+    dict_industry_code = {
+        "Bán lẻ": "5300",
+        "Bất động sản": "8600",
+        "Dầu khí": "0500",
+        "Dịch vụ tài chính": "8700",
+        "Điện, nước & xăng dầu khí đốt": "7500",
+        "Ngân hàng": "8300",
+        "Viễn thông": "6500",
+        "Xây dựng và Vật liệu": "2300",
+        "Y tế": "4500",
+        "Bảo hiểm": "8500",
+        "Công nghệ Thông tin": "9500",
+        "Du lịch và Giải trí": "5700",
+        "Hàng & Dịch vụ Công nghiệp": "2700",
+        "Hàng cá nhân & Gia dụng": "3700",
+        "Hóa chất": "1300",
+        "Ô tô và phụ tùng": "3300",
+        "Thực phẩm và đồ uống": "3500",
+        "Tài nguyên Cơ bản": "1700",
+        "Truyền thông": "5500"
+    }
+    selected_industries = list(dict_industry_code.keys())
 
     if timeframe == "daylyArray":
         selected_timeframe = timestamp_table[-2:]
@@ -1482,12 +1539,17 @@ def create_treemap_values(timeframe="daylyArray"):
         return "Khung giờ không hợp lệ"
     if request.method == 'POST':
         selected_timeframe = request.form.get('timeframe')
+        selected_industries = request.form.getlist('industry')
+        print(selected_industries)
+        if (len(selected_industries) == 0):
+            selected_industries = list(dict_industry_code.keys())
+        
         if selected_timeframe == "daylyArray": 
-            return redirect('/treemap_values/daylyArray')
+            selected_timeframe = timestamp_table[-2:]
         elif selected_timeframe == "weekArray":
-            return redirect('/treemap_values/weekArray')
+            selected_timeframe = timestamp_table[-8:]
         elif selected_timeframe == "monthArray":
-            return redirect('/treemap_values/monthArray')
+            selected_timeframe = timestamp_table[-31:]
         else:
             return "Khung giờ không hợp lệ"
     cur.execute("""SELECT * 
@@ -1536,6 +1598,7 @@ def create_treemap_values(timeframe="daylyArray"):
     df_price.set_index('ticker').join(df.set_index('ticker'), on='ticker', validate='1:1').reset_index()
     
     data_result = df_price.set_index('ticker').join(df.set_index('ticker'), on='ticker', validate='1:1').reset_index()
+    data_result = data_result[(data_result['industry_name'].isin(selected_industries))]
     data_result['percent'] = pd.to_numeric((data_result['close'] - data_result['close_pr'])/data_result['close_pr'])
     def checkTypeUpdown(x):
         if x == 0:
@@ -1573,6 +1636,11 @@ def create_treemap_values(timeframe="daylyArray"):
     plot_ex = fig_ex.to_html(full_html=False)
     
 
-    return render_template("/chart/analyst/treemap_values.html", treemap=plot, plot_ex = plot_ex,selected_timeframe=timeframe)
+    return render_template("/chart/analyst/treemap_values.html", treemap=plot,
+                           plot_ex = plot_ex,
+                           selected_timeframe=timeframe,
+                           industry_codes = dict_industry_code,
+                           selected_industries = selected_industries)
+    
 if __name__ == "__main__":
     app.run()
