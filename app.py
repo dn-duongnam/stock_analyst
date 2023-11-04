@@ -1330,6 +1330,7 @@ def overview(ticker = "TCH"):
              text='percent',
              orientation='h',
              color='type',
+            color_discrete_sequence =['#fd625e', '#01b8aa'],
              title='% Biến động giá trong ngày')
     fig_percent.update_layout(yaxis={'categoryorder':'total ascending'})
     fig_percent.update_traces(texttemplate='%{text:.2f}%', textposition='outside') 
