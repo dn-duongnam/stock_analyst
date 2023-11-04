@@ -3,28 +3,45 @@
 {% block content %}
 <!-- page content -->
 <div class="right_col" role="main">
-    <div class="">
-        <div class="page-title">
-            <div class="title_left">
-                <h3>Phân tích kỹ thuật</h3>
-            </div>
-            <div>
-                <label for="ticker"
-                    style="font-weight: bold; display: inline-block; width: 120px; text-align: right;">Chọn
-                    mã cổ phiếu:</label>
-                <select id="ticker" name="ticker" class="select2" style="width: 150px;">
-                    <option value="">-- Chọn mã cổ phiếu --</option>
-                    {% for code in stock_codes %}
-                    <option value="{{ code }}" {% if code==ticker %}selected{% endif %}>{{ code }}
-                    </option>
-                    {% endfor %}
-                </select>
-                <button
-                    style="background-color: #007bff; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-left: 20px;"
-                    onclick="updateChart()">Cập nhật biểu đồ</button>
+    <div class="col-md-12 col-sm-12 ">
+        <div class="dashboard_graph">
 
+            <div class="row x_title">
+                <div class="col-md-6">
+                    <h3>{{ organName }}</h3>
+                </div>
+                <div class="col-md-6">
+                    <div id="reportrange" class="pull-right"
+                        style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
+                        <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
+                        <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
+                    </div>
+                </div>
             </div>
+
+            <div class="col-md-12 col-sm-12 ">
+                <div>
+
+                    <!-- Chọn mã cổ phiếu và khung giờ -->
+                    <label for="ticker"
+                        style="font-weight: bold; display: inline-block; width: 120px; text-align: right;">Chọn mã
+                        cổ phiếu:</label>
+                    <select id="ticker" name="ticker" class="select2" style="width: 150px;">
+                        <option value="">-- Chọn mã cổ phiếu --</option>
+                        {% for code in stock_codes %}
+                        <option value="{{ code }}" {% if code==ticker %}selected{% endif %}>{{ code }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <button
+                        style="background-color: #007bff; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-left: 20px;"
+                        onclick="updateChart()">Cập nhật biểu đồ</button>
+
+                </div>
+            </div>
+
         </div>
+    </div>
 
         <div class="clearfix"></div>
 

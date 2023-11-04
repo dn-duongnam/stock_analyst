@@ -36,7 +36,7 @@
 
                 <div class="row x_title">
                     <div class="col-md-6">
-                        <h3>Candlestick Chart for {{ ticker }}</h3>
+                        <h3>{{ organName }}</h3>
                     </div>
                     <div class="col-md-6">
                         <div id="reportrange" class="pull-right"
@@ -83,16 +83,16 @@
                             {% endfor %}
                         </select>
 
-                          <!-- Chọn năm kết thúc -->
-                          <label for="end_time"
-                          style="font-weight: bold; display: inline-block; width: 150px; text-align: right;">Chọn Năm
-                          Kết Thúc:</label>
-                      <select id="end_time" name="start_year" style="width: 150px;">
-                          <option value={{end_time}}>{{ end_time }}</option>
-                          {% for year in range(2000, 2025) %}
-                          <option value="{{ year }}" {% if year==end_time %}selected{% endif %}>{{ year }}</option>
-                          {% endfor %}
-                      </select>
+                        <!-- Chọn năm kết thúc -->
+                        <label for="end_time"
+                            style="font-weight: bold; display: inline-block; width: 150px; text-align: right;">Chọn Năm
+                            Kết Thúc:</label>
+                        <select id="end_time" name="start_year" style="width: 150px;">
+                            <option value={{end_time}}>{{ end_time }}</option>
+                            {% for year in range(2000, 2025) %}
+                            <option value="{{ year }}" {% if year==end_time %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
+                        </select>
 
                         <button
                             style="background-color: #007bff; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-left: 20px;"

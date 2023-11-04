@@ -121,6 +121,11 @@ def create_cand1Y_chart(timeframe="d1", ticker="TCH", start_year = 2016, end_yea
         open_price, close_price, high_price, low_price, volume = latest_data
     else:
         open_price, close_price, high_price, low_price, volume = None, None, None, None, None
+        
+      #name
+    cur.execute(f"SELECT organName FROM company  WHERE ticker = %s" , (ticker,))
+    organName = cur.fetchall()
+    
     start_time = start_year
     end_time = end_year 
     start_year = datetime(int(start_year), 1, 1, 7, 0, 0).timestamp()
@@ -159,7 +164,8 @@ def create_cand1Y_chart(timeframe="d1", ticker="TCH", start_year = 2016, end_yea
     stock_codes = [code[0] for code in cur.fetchall()]
 
     return render_template("/chart/cand/cand.html", plot_cand=plot_html, ticker=ticker, stock_codes=stock_codes, start_time = start_time, end_time = end_time,
-                           selected_timeframe=timeframe, open_price=open_price, close_price=close_price, high_price=high_price, low_price=low_price, volume=volume)
+                           selected_timeframe=timeframe, open_price=open_price, close_price=close_price, high_price=high_price, low_price=low_price, volume=volume,
+                           organName = organName[0][0])
 
 
 #get 3month
@@ -189,6 +195,10 @@ def create_cand_chart_100(timeframe="d1", ticker="TCH"):
     else:
         open_price, close_price, high_price, low_price, volume = None, None, None, None, None
 
+    #name
+    cur.execute(f"SELECT organName FROM company  WHERE ticker = %s" , (ticker,))
+    organName = cur.fetchall()
+    
     cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 66", (ticker,))
     # cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s", (ticker,))
     records = cur.fetchall()
@@ -221,12 +231,15 @@ def create_cand_chart_100(timeframe="d1", ticker="TCH"):
     cur.execute("SELECT DISTINCT ticker FROM d1")
     stock_codes = [code[0] for code in cur.fetchall()]
 
-    return render_template("/chart/cand/cand3M.html", plot_cand=plot_html, ticker=ticker, stock_codes=stock_codes, selected_timeframe=timeframe, open_price=open_price, close_price=close_price, high_price=high_price, low_price=low_price, volume=volume)
+    return render_template("/chart/cand/cand3M.html", plot_cand=plot_html, ticker=ticker, stock_codes=stock_codes, selected_timeframe=timeframe, 
+                           open_price=open_price, close_price=close_price, high_price=high_price, low_price=low_price, volume=volume, organName = organName[0][0])
 # @app.route("/")
 @app.route("/analyst/d1/<ticker>", methods=['GET', 'POST'])
 def analyst(ticker = "TCH"):
     cur = mysql.connection.cursor()
-    
+    #name
+    cur.execute(f"SELECT organName FROM company  WHERE ticker = %s" , (ticker,))
+    organName = cur.fetchall()
     # Truy vấn dữ liệu từ SQL
     cur.execute(f"SELECT * FROM d1 WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 100", (ticker,))
     cur.execute(f"SELECT * FROM d1 WHERE ticker = %s", (ticker,))
@@ -454,13 +467,16 @@ def analyst(ticker = "TCH"):
     cur.execute("SELECT DISTINCT ticker FROM d1")
     stock_codes = [code[0] for code in cur.fetchall()]
 
-    return render_template("/chart/analyst/analyst.html", plot_bb=plot_bb, plot_ma = plot_ma, plot_macd = plot_macd, plot_stoch = plot_stoch, plot_rsi = plot_rsi, ticker=ticker, stock_codes=stock_codes)
+    return render_template("/chart/analyst/analyst.html", plot_bb=plot_bb, plot_ma = plot_ma, plot_macd = plot_macd, plot_stoch = plot_stoch, 
+                           plot_rsi = plot_rsi, ticker=ticker, stock_codes=stock_codes, organName = organName[0][0])
 
 #get 3 month record
 @app.route("/analyst3M/d1/<ticker>", methods=['GET', 'POST'])
 def analyst_3m(ticker = "TCH"):
     cur = mysql.connection.cursor()
-    
+     #name
+    cur.execute(f"SELECT organName FROM company  WHERE ticker = %s" , (ticker,))
+    organName = cur.fetchall()
     # Truy vấn dữ liệu từ SQL
     cur.execute(f"SELECT * FROM d1 WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 66", (ticker,))
     # cur.execute(f"SELECT * FROM d1 WHERE ticker = %s", (ticker,))
@@ -688,10 +704,14 @@ def analyst_3m(ticker = "TCH"):
     cur.execute("SELECT DISTINCT ticker FROM d1")
     stock_codes = [code[0] for code in cur.fetchall()]
 
-    return render_template("/chart/analyst/analyst3M.html", plot_bb=plot_bb, plot_ma = plot_ma, plot_macd = plot_macd, plot_stoch = plot_stoch, plot_rsi = plot_rsi, ticker=ticker, stock_codes=stock_codes)
+    return render_template("/chart/analyst/analyst3M.html", plot_bb=plot_bb, plot_ma = plot_ma, plot_macd = plot_macd, plot_stoch = plot_stoch, 
+                           plot_rsi = plot_rsi, ticker=ticker, stock_codes=stock_codes, organName = organName[0][0])
 @app.route('/mcdx/<timeframe>/<ticker>', methods=['GET', 'POST'])
 def create_mcdx_chart(timeframe="m15", ticker="TCH"):
     cur = mysql.connection.cursor()
+     #name
+    cur.execute(f"SELECT organName FROM company  WHERE ticker = %s" , (ticker,))
+    organName = cur.fetchall()
 
     if timeframe == "m1":
         table_name = "m1_intraday_table"
@@ -735,11 +755,15 @@ def create_mcdx_chart(timeframe="m15", ticker="TCH"):
     cur.execute("SELECT DISTINCT ticker FROM d1")
     stock_codes = [code[0] for code in cur.fetchall()]
 
-    return render_template("/chart/analyst/mcdx.html", plot_mcdx=plot_html, ticker=ticker, stock_codes=stock_codes, selected_timeframe=timeframe)
+    return render_template("/chart/analyst/mcdx.html", plot_mcdx=plot_html, ticker=ticker, stock_codes=stock_codes, 
+                           selected_timeframe=timeframe, organName = organName[0][0])
 
 @app.route('/mcdx_new/<timeframe>/<ticker>', methods=['GET', 'POST'])
 def create_mcdx_new_chart(timeframe="m15", ticker="TCH"):
     cur = mysql.connection.cursor()
+     #name
+    cur.execute(f"SELECT organName FROM company  WHERE ticker = %s" , (ticker,))
+    organName = cur.fetchall()
 
     if timeframe == "m1":
         table_name = "m1_intraday_table"
@@ -890,7 +914,7 @@ def create_mcdx_new_chart(timeframe="m15", ticker="TCH"):
     stock_codes = [code[0] for code in cur.fetchall()]
 
     return render_template("/chart/analyst/mcdx_new.html", plot_mcdx=plot_html, plot_mcdx_all=plot_all,ticker=ticker, plot_pie_buy = plot_pie_buy,
-                            plot_pie_sell = plot_pie_sell,stock_codes=stock_codes, selected_timeframe=timeframe)
+                            plot_pie_sell = plot_pie_sell,stock_codes=stock_codes, selected_timeframe=timeframe, organName = organName[0][0])
 
 
 @app.route('/treemap/<timeframe>', methods=['GET', 'POST'])
@@ -1365,6 +1389,12 @@ def overview_one(ticker="TCH"):
     else:
         open_price, close_price, high_price, low_price, volume = None, None, None, None, None
 
+    
+    #name
+    cur.execute(f"SELECT organName FROM company  WHERE ticker = %s" , (ticker,))
+    organName = cur.fetchall()
+
+    
     # cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 100", (ticker,))
     cur.execute(f"SELECT * FROM d1 WHERE ticker = %s" , (ticker,))
     records = cur.fetchall()
@@ -1511,7 +1541,8 @@ def overview_one(ticker="TCH"):
     stock_codes = [code[0] for code in cur.fetchall()]
 
     return render_template("/chart/overview/overview_one.html", plot_cand=plot_html,  plot_line_day  =  plot_line_day,  plot_line_month =  plot_line_month,  plot_line_quarter =  plot_line_quarter,  plot_line_year = plot_line_year,
-                           ticker=ticker, stock_codes=stock_codes, open_price=open_price, close_price=close_price, high_price=high_price, low_price=low_price, volume=volume)
+                           ticker=ticker, stock_codes=stock_codes, open_price=open_price, close_price=close_price, high_price=high_price, low_price=low_price, volume=volume,
+                           organName = organName[0][0])
 
 
 
