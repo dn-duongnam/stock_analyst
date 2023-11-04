@@ -1124,93 +1124,93 @@ def overview(ticker = "TCH"):
     cur = mysql.connection.cursor()
         
     # Truy vấn dữ liệu từ SQL
-    cur.execute("""SELECT * 
-    FROM d1
-    WHERE d1.ticker = %s;
-    """, (ticker,))
-    records = cur.fetchall()
-    columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'sum_price']
-    df_price = pd.DataFrame.from_records(records, columns=columnName)
-    df_price['time_stamp'] = pd.to_datetime(df_price['time_stamp'], unit='s')
-    df_price['time'] = df_price['time_stamp'].dt.tz_localize('UTC').dt.tz_convert('Asia/Ho_Chi_Minh')
-    df_price['year'] = df_price['time'].dt.year
-    df_price['month'] = df_price['time'].dt.month
-    df_price['day'] = df_price['time'].dt.day
-    df_price['quarter'] = df_price['time'].dt.quarter
-    df_price.groupby('year').agg({
-    'open':'mean',
-    'close':'mean',
-    'high':'mean',
-    'low':'mean',
-    })
-    year_df = df_price.groupby('year').agg({
-                'open':'mean',
-                'close':'mean',
-                'high':'mean',
-                'low':'mean',
-            }).reset_index()
+    # cur.execute("""SELECT * 
+    # FROM d1
+    # WHERE d1.ticker = %s;
+    # """, (ticker,))
+    # records = cur.fetchall()
+    # columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'sum_price']
+    # df_price = pd.DataFrame.from_records(records, columns=columnName)
+    # df_price['time_stamp'] = pd.to_datetime(df_price['time_stamp'], unit='s')
+    # df_price['time'] = df_price['time_stamp'].dt.tz_localize('UTC').dt.tz_convert('Asia/Ho_Chi_Minh')
+    # df_price['year'] = df_price['time'].dt.year
+    # df_price['month'] = df_price['time'].dt.month
+    # df_price['day'] = df_price['time'].dt.day
+    # df_price['quarter'] = df_price['time'].dt.quarter
+    # df_price.groupby('year').agg({
+    # 'open':'mean',
+    # 'close':'mean',
+    # 'high':'mean',
+    # 'low':'mean',
+    # })
+    # year_df = df_price.groupby('year').agg({
+    #             'open':'mean',
+    #             'close':'mean',
+    #             'high':'mean',
+    #             'low':'mean',
+    #         }).reset_index()
 
-    fig_line_year = go.Figure()
-    fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
-    fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
-    fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
-    fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
-    fig_line_year.add_hline(y=year_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
-    fig_line_year.update_traces(textposition="bottom right")
-    plot_line_year = fig_line_year.to_html(full_html=False)
+    # fig_line_year = go.Figure()
+    # fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
+    # fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
+    # fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
+    # fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
+    # fig_line_year.add_hline(y=year_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
+    # fig_line_year.update_traces(textposition="bottom right")
+    # plot_line_year = fig_line_year.to_html(full_html=False)
     
-    #-------------------------------------------------------------------------------------------------------------------------
-    day_df = df_price.groupby('day').agg({
-                'open':'mean',
-                'close':'mean',
-                'high':'mean',
-                'low':'mean',
-            }).reset_index()
+    # #-------------------------------------------------------------------------------------------------------------------------
+    # day_df = df_price.groupby('day').agg({
+    #             'open':'mean',
+    #             'close':'mean',
+    #             'high':'mean',
+    #             'low':'mean',
+    #         }).reset_index()
 
-    fig_line_day = go.Figure()
-    fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
-    fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
-    fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
-    fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
-    fig_line_day.add_hline(y=day_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
-    fig_line_day.update_traces(textposition="bottom right")
-    plot_line_day = fig_line_day.to_html(full_html=False)
+    # fig_line_day = go.Figure()
+    # fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
+    # fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
+    # fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
+    # fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
+    # fig_line_day.add_hline(y=day_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
+    # fig_line_day.update_traces(textposition="bottom right")
+    # plot_line_day = fig_line_day.to_html(full_html=False)
 
-    #---------------------------------------------------------------------------------------------------------------------------
+    # #---------------------------------------------------------------------------------------------------------------------------
     
-    quarter_df = df_price.groupby('quarter').agg({
-                'open':'mean',
-                'close':'mean',
-                'high':'mean',
-                'low':'mean',
-            }).reset_index()
+    # quarter_df = df_price.groupby('quarter').agg({
+    #             'open':'mean',
+    #             'close':'mean',
+    #             'high':'mean',
+    #             'low':'mean',
+    #         }).reset_index()
 
-    fig_line_quarter = go.Figure()
-    fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
-    fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
-    fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
-    fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
-    fig_line_quarter.add_hline(y=day_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
-    fig_line_quarter.update_traces(textposition="bottom right")
+    # fig_line_quarter = go.Figure()
+    # fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
+    # fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
+    # fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
+    # fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
+    # fig_line_quarter.add_hline(y=day_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
+    # fig_line_quarter.update_traces(textposition="bottom right")
     
-    plot_line_quarter = fig_line_quarter.to_html(full_html=False)
+    # plot_line_quarter = fig_line_quarter.to_html(full_html=False)
     
-    #--------------------------------------------------------------------------------------------------------------------------------
-    month_df = df_price.groupby('month').agg({
-                'open':'mean',
-                'close':'mean',
-                'high':'mean',
-                'low':'mean',
-            }).reset_index()
+    # #--------------------------------------------------------------------------------------------------------------------------------
+    # month_df = df_price.groupby('month').agg({
+    #             'open':'mean',
+    #             'close':'mean',
+    #             'high':'mean',
+    #             'low':'mean',
+    #         }).reset_index()
 
-    fig_line_month = go.Figure()
-    fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
-    fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
-    fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
-    fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
-    fig_line_month.add_hline(y=month_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
-    fig_line_month.update_traces(textposition="bottom right")
-    plot_line_month = fig_line_month.to_html(full_html=False)
+    # fig_line_month = go.Figure()
+    # fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
+    # fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
+    # fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
+    # fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
+    # fig_line_month.add_hline(y=month_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
+    # fig_line_month.update_traces(textposition="bottom right")
+    # plot_line_month = fig_line_month.to_html(full_html=False)
     
     #---------------------------------------------------------------------------------------------------------------------------------
     
@@ -1340,12 +1340,165 @@ def overview(ticker = "TCH"):
     stock_codes = [code[0] for code in cur.fetchall()]
     
 
-    return render_template("/chart/overview/overview.html", plot_line_year=plot_line_year,plot_line_day=plot_line_day, 
-                           plot_line_quarter=plot_line_quarter, plot_line_month=plot_line_month,plot_trans_values = plot_trans_values,
+    return render_template("/chart/overview/overview.html",plot_trans_values = plot_trans_values,
                            plot_treemap = plot_treemap,plot_his_up = plot_his_up,plot_his_down=plot_his_down,  plot_his_volume= plot_his_volume, plot_his_percent= plot_his_percent,
                            ticker=ticker, stock_codes=stock_codes)
 
+#------------------------------------------------
+@app.route("/")
+@app.route('/overview_one/<ticker>', methods=['GET', 'POST'])
+def overview_one(ticker="TCH"):
+    cur = mysql.connection.cursor()
 
+    # Truy vấn SQL để lấy giá mở cửa, giá đóng cửa, giá cao nhất, giá thấp nhất và khối lượng giao dịch của ngày mới nhất
+    cur.execute(f"SELECT open, close, high, low, volume FROM d1 WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 1", (ticker,))
+    latest_data = cur.fetchone()
+
+    if latest_data:
+        open_price, close_price, high_price, low_price, volume = latest_data
+    else:
+        open_price, close_price, high_price, low_price, volume = None, None, None, None, None
+
+    # cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 100", (ticker,))
+    cur.execute(f"SELECT * FROM d1 WHERE ticker = %s" , (ticker,))
+    records = cur.fetchall()
+
+    columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'sum_price']
+    df = pd.DataFrame.from_records(records, columns=columnName)
+    df['time_stamp'] = pd.to_datetime(df['time_stamp'], unit='s')
+    df['time'] = df['time_stamp'].dt.tz_localize('UTC').dt.tz_convert('Asia/Ho_Chi_Minh')
+    # df = df.sort_values(by='time', ascending=True).reset_index(drop=True)
+
+        # Tạo biểu đồ nến sử dụng Plotly
+    fig = go.Figure(data=[go.Candlestick(x=df['time'],
+                    open=df['open'],
+                    high=df['high'],
+                    low=df['low'],
+                    close=df['close'])])
+
+    # Tính dải Bollinger Bands
+    df['20_day_sma'] = df['close'].rolling(window=20).mean()
+    df['20_day_std'] = df['close'].rolling(window=20).std()
+    df['upper_band'] = df['20_day_sma'] + (df['20_day_std'] * 2)
+    df['lower_band'] = df['20_day_sma'] - (df['20_day_std'] * 2)
+
+    # Tạo biểu đồ dải Bollinger Bands
+    fig.add_trace(go.Scatter(x=df['time'], y=df['20_day_sma'], mode='lines', name='Trung bình 20 ngày', line=dict(color='#FF3747')))
+    fig.add_trace(go.Scatter(x=df['time'], y=df['upper_band'], mode='lines', name='Dải trên Bollinger Bands', line=dict(color='#64BAFF')))
+    fig.add_trace(go.Scatter(x=df['time'], y=df['lower_band'], fill='tonexty', name='Dải dưới Bollinger Bands', line=dict(color='#64BAFF'), fillcolor='rgba(40, 60, 52, 0.4)'))
+
+
+    # Tùy chỉnh biểu đồ nến
+    fig.update_layout(
+        title='',
+        xaxis_title='Thời gian',
+        yaxis_title='Giá',
+        plot_bgcolor='#363636',  # Màu nền của biểu đồ
+        xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
+        yaxis_gridcolor='gray',  # Màu của đường kẻ ngang
+        xaxis_rangeslider_visible=True
+)
+
+    plot_html = fig.to_html(full_html=False)
+    # Truy vấn dữ liệu từ SQL
+    cur.execute("""SELECT * 
+    FROM d1
+    WHERE d1.ticker = %s;
+    """, (ticker,))
+    records = cur.fetchall()
+    columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'sum_price']
+    df_price = pd.DataFrame.from_records(records, columns=columnName)
+    df_price['time_stamp'] = pd.to_datetime(df_price['time_stamp'], unit='s')
+    df_price['time'] = df_price['time_stamp'].dt.tz_localize('UTC').dt.tz_convert('Asia/Ho_Chi_Minh')
+    df_price['year'] = df_price['time'].dt.year
+    df_price['month'] = df_price['time'].dt.month
+    df_price['day'] = df_price['time'].dt.day
+    df_price['quarter'] = df_price['time'].dt.quarter
+    df_price.groupby('year').agg({
+    'open':'mean',
+    'close':'mean',
+    'high':'mean',
+    'low':'mean',
+    })
+    year_df = df_price.groupby('year').agg({
+                'open':'mean',
+                'close':'mean',
+                'high':'mean',
+                'low':'mean',
+            }).reset_index()
+
+    fig_line_year = go.Figure()
+    fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
+    fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
+    fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
+    fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
+    fig_line_year.add_hline(y=year_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
+    fig_line_year.update_traces(textposition="bottom right")
+    plot_line_year = fig_line_year.to_html(full_html=False)
+    
+    #-------------------------------------------------------------------------------------------------------------------------
+    day_df = df_price.groupby('day').agg({
+                'open':'mean',
+                'close':'mean',
+                'high':'mean',
+                'low':'mean',
+            }).reset_index()
+
+    fig_line_day = go.Figure()
+    fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
+    fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
+    fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
+    fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
+    fig_line_day.add_hline(y=day_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
+    fig_line_day.update_traces(textposition="bottom right")
+    plot_line_day = fig_line_day.to_html(full_html=False)
+
+    #---------------------------------------------------------------------------------------------------------------------------
+    
+    quarter_df = df_price.groupby('quarter').agg({
+                'open':'mean',
+                'close':'mean',
+                'high':'mean',
+                'low':'mean',
+            }).reset_index()
+
+    fig_line_quarter = go.Figure()
+    fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
+    fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
+    fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
+    fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
+    fig_line_quarter.add_hline(y=day_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
+    fig_line_quarter.update_traces(textposition="bottom right")
+    
+    plot_line_quarter = fig_line_quarter.to_html(full_html=False)
+    
+    #--------------------------------------------------------------------------------------------------------------------------------
+    month_df = df_price.groupby('month').agg({
+                'open':'mean',
+                'close':'mean',
+                'high':'mean',
+                'low':'mean',
+            }).reset_index()
+
+    fig_line_month = go.Figure()
+    fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
+    fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
+    fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
+    fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
+    fig_line_month.add_hline(y=month_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
+    fig_line_month.update_traces(textposition="bottom right")
+    plot_line_month = fig_line_month.to_html(full_html=False)
+    
+
+    cur.execute("SELECT DISTINCT ticker FROM d1")
+    stock_codes = [code[0] for code in cur.fetchall()]
+
+    return render_template("/chart/overview/overview_one.html", plot_cand=plot_html,  plot_line_day  =  plot_line_day,  plot_line_month =  plot_line_month,  plot_line_quarter =  plot_line_quarter,  plot_line_year = plot_line_year,
+                           ticker=ticker, stock_codes=stock_codes, open_price=open_price, close_price=close_price, high_price=high_price, low_price=low_price, volume=volume)
+
+
+
+#--------------------------------------------------
 @app.route('/treemap_cap/<timeframe>', methods=['GET', 'POST'])
 def create_treemap_cap(timeframe="daylyArray"):
     cur = mysql.connection.cursor()

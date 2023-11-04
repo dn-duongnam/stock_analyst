@@ -1,20 +1,40 @@
 {% extends "base.html" %}
-{% block title %} MCDX {% endblock title %}
+{% block title %} Tổng quan {% endblock title %}
 {% block content %}
 <!-- page content -->
 <div class="right_col" role="main">
     <!-- top tiles -->
     <div class="row" style="display: inline-block;">
+        <div class="tile_count">
+            <div class="col-md-3 col-sm-3  tile_stats_count">
+                <span class="count_top"><i class="fa fa-usd"></i> Giá mở cửa</span>
+                <div class="count">{{ open_price }}</div>
+            </div>
+            <div class="col-md-3 col-sm-3  tile_stats_count">
+                <span class="count_top"><i class="fa fa-usd"></i> Giá đóng cửa</span>
+                <div class="count">{{ close_price }}</div>
+            </div>
+            <div class="col-md-3 col-sm-3  tile_stats_count">
+                <span class="count_top"><i class="fa fa-usd"></i> Giá cao nhất</span>
+                <div class="count">{{ high_price }}</div>
+            </div>
+            <div class="col-md-3 col-sm-3  tile_stats_count">
+                <span class="count_top"><i class="fa fa-usd"></i> Giá thấp nhất</span>
+                <div class="count">{{ low_price }}</div>
+            </div>
+            <div class="col-md-3 col-sm-3  tile_stats_count">
+                <span class="count_top"><i class="fa fa-bars"></i> Khối lượng giao dịch</span>
+                <div class="count">{{ volume }}</div>
+            </div>
+        </div>
     </div>
-    <!-- /top tiles -->
-
     <div class="row">
         <div class="col-md-12 col-sm-12 ">
             <div class="dashboard_graph">
 
                 <div class="row x_title">
                     <div class="col-md-6">
-                        <h3>MCDX for {{ ticker }}</h3>
+                        <h3>Biểu đồ nến{{ ticker }}</h3>
                     </div>
                     <div class="col-md-6">
                         <div id="reportrange" class="pull-right"
@@ -37,29 +57,14 @@
                             </option>
                             {% endfor %}
                         </select>
-
-                        <label for="timeframe"
-                            style="font-weight: bold; display: inline-block; width: 120px; text-align: right;">Chọn
-                            khung giờ:</label>
-                        <select id="timeframe" name="timeframe" style="width: 150px;">
-                            <option value="m1" {% if selected_timeframe=="m1" %}selected{% endif %}>M1
-                            </option>
-                            <option value="m15" {% if selected_timeframe=="m15" %}selected{% endif %}>M15
-                            </option>
-                            <option value="h1" {% if selected_timeframe=="h1" %}selected{% endif %}>H1
-                            </option>
-                            <option value="d1" {% if selected_timeframe=="d1" %}selected{% endif %}>D1
-                            </option>
-                        </select>
-
                         <button
                             style="background-color: #007bff; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-left: 20px;"
                             onclick="updateChart()">Cập nhật biểu đồ</button>
                         <div class="row">
-                            <div class="col-md-6 col-sm-6  ">
+                            <div class="col-md-12 col-sm-12  ">
                                 <div class="x_panel">
                                     <div class="x_title">
-                                        <h2>Mua chủ động</h2>
+                                        <h2>Biểu đồ nên và Bollinger Bands</h2>
                                         <ul class="nav navbar-right panel_toolbox">
                                             <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                                             </li>
@@ -80,7 +85,7 @@
                                         <div style="margin-top: 20px; border: 1px solid #ccc; padding: 20px; border-radius: 5px; transition: transform 0.2s;"
                                             onmouseover="this.style.transform='scale(1.02)';"
                                             onmouseout="this.style.transform='scale(1)';">
-                                            {{ plot_pie_buy | safe }}
+                                            {{ plot_cand | safe }}
                                         </div>
                                     </div>
                                 </div>
@@ -88,7 +93,7 @@
                             <div class="col-md-6 col-sm-6  ">
                                 <div class="x_panel">
                                     <div class="x_title">
-                                        <h2>Bán chủ động</h2>
+                                        <h2></h2>
                                         <ul class="nav navbar-right panel_toolbox">
                                             <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                                             </li>
@@ -109,16 +114,16 @@
                                         <div style="margin-top: 20px; border: 1px solid #ccc; padding: 20px; border-radius: 5px; transition: transform 0.2s;"
                                             onmouseover="this.style.transform='scale(1.02)';"
                                             onmouseout="this.style.transform='scale(1)';">
-                                            {{ plot_pie_sell | safe }}
+                                            {{ plot_line_day | safe }}
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="col-md-12 col-sm-12  ">
+                            <div class="col-md-6 col-sm-6  ">
                                 <div class="x_panel">
                                     <div class="x_title">
-                                        <h2>MCDX</h2>
+                                        <h2></h2>
                                         <ul class="nav navbar-right panel_toolbox">
                                             <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                                             </li>
@@ -139,15 +144,15 @@
                                         <div style="margin-top: 20px; border: 1px solid #ccc; padding: 20px; border-radius: 5px; transition: transform 0.2s;"
                                             onmouseover="this.style.transform='scale(1.02)';"
                                             onmouseout="this.style.transform='scale(1)';">
-                                            {{ plot_mcdx | safe }}
+                                            {{plot_line_month | safe }}
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-12 col-sm-12  ">
+                            <div class="col-md-6 col-sm-6  ">
                                 <div class="x_panel">
                                     <div class="x_title">
-                                        <h2>MCDX</h2>
+                                        <h2></h2>
                                         <ul class="nav navbar-right panel_toolbox">
                                             <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
                                             </li>
@@ -168,7 +173,36 @@
                                         <div style="margin-top: 20px; border: 1px solid #ccc; padding: 20px; border-radius: 5px; transition: transform 0.2s;"
                                             onmouseover="this.style.transform='scale(1.02)';"
                                             onmouseout="this.style.transform='scale(1)';">
-                                            {{ plot_mcdx_all | safe }}
+                                            {{  plot_line_quarter | safe }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-6  ">
+                                <div class="x_panel">
+                                    <div class="x_title">
+                                        <h2></h2>
+                                        <ul class="nav navbar-right panel_toolbox">
+                                            <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                            </li>
+                                            <li class="dropdown">
+                                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                                                    aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                                    <a class="dropdown-item" href="#">Settings 1</a>
+                                                    <a class="dropdown-item" href="#">Settings 2</a>
+                                                </div>
+                                            </li>
+                                            <li><a class="close-link"><i class="fa fa-close"></i></a>
+                                            </li>
+                                        </ul>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                    <div class="x_content">
+                                        <div style="margin-top: 20px; border: 1px solid #ccc; padding: 20px; border-radius: 5px; transition: transform 0.2s;"
+                                            onmouseover="this.style.transform='scale(1.02)';"
+                                            onmouseout="this.style.transform='scale(1)';">
+                                            {{  plot_line_year | safe }}
                                         </div>
                                     </div>
                                 </div>
@@ -183,12 +217,13 @@
         $(document).ready(function () {
             $('.select2').select2();
         });
+    
         function updateChart() {
             var selectedTicker = document.getElementById("ticker").value;
-            var selectedTimeframe = document.getElementById("timeframe").value;
-            if (selectedTicker && selectedTimeframe) {
-                location.href = "/mcdx_new/" + selectedTimeframe + "/" + selectedTicker;
+            if (selectedTicker) {
+                location.href = "/overview_one" + "/" + selectedTicker;
             }
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc0/dist/js/select2.min.js"></script>
     {% endblock %}
