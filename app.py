@@ -26,7 +26,7 @@ app.secret_key = 'Duong Nam'
 # app.config['MYSQL_DATABASE_AUTH_PLUGIN'] = 'mysql_native_password'
 
 app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_PORT'] = 3306
+app.config['MYSQL_PORT'] = 3308
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'stock_db'
@@ -141,22 +141,38 @@ def create_cand1Y_chart(timeframe="d1", ticker="TCH", start_year = 2016, end_yea
     df['time'] = df['time_stamp'].dt.tz_localize('UTC').dt.tz_convert('Asia/Ho_Chi_Minh')
     # df = df.sort_values(by='time', ascending=True).reset_index(drop=True)
 
-    fig = go.Figure(data=[go.Candlestick(
-        x=df['time'],
-        open=df['open'],
-        high=df['high'],
-        low=df['low'],
-        close=df['close']
-    )])
+    # Tạo subplot cho biểu đồ nến và histogram
+    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, row_heights=[0.7, 0.3])
 
-    fig.update_layout(
-        xaxis_title='Thời gian',
-        yaxis_title='Giá',
-        plot_bgcolor='#363636',
-        xaxis_gridcolor='gray',
-        yaxis_gridcolor='gray',
-        xaxis_rangeslider_visible=True
-    )
+    # Tạo danh sách màu cho biểu đồ histogram
+    colors = ['green' if close > open else 'red' for open, close in zip(df['open'], df['close'])]
+
+    # Biểu đồ nến
+    candlestick = go.Candlestick(x=df['time'],
+                    open=df['open'],
+                    high=df['high'],
+                    low=df['low'],
+                    close=df['close'])
+    fig.add_trace(candlestick, row=1, col=1)
+
+    # Biểu đồ histogram khối lượng giao dịch với màu tùy theo giá đóng cửa
+    bar = go.Bar(x=df['time'], y=df['volume'], marker_color=colors)
+    fig.add_trace(bar, row=2, col=1)
+
+    # Tùy chỉnh biểu đồ nến
+    fig.update_xaxes(title_text="Thời gian", row=2, col=1)
+    fig.update_yaxes(title_text="Giá", row=1, col=1)
+
+    # Tùy chỉnh trục y cho biểu đồ histogram
+    fig.update_xaxes(title_text="Thời gian", row=1, col=1)
+    fig.update_yaxes(title_text="Khối lượng giao dịch", secondary_y=True, row=2, col=1)
+
+    # Hiển thị biểu đồ
+    fig.update_layout(title='Biểu đồ nến và Khối lượng giao dịch',
+                    plot_bgcolor='#363636',  # Màu nền của biểu đồ
+                    xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
+                    yaxis_gridcolor='gray',  # Màu của đường kẻ ngang
+                    xaxis_rangeslider_visible=True)
 
     plot_html = fig.to_html(full_html=False)
 
@@ -209,22 +225,39 @@ def create_cand_chart_100(timeframe="d1", ticker="TCH"):
     df['time'] = df['time_stamp'].dt.tz_localize('UTC').dt.tz_convert('Asia/Ho_Chi_Minh')
     df = df.sort_values(by='time', ascending=True).reset_index(drop=True)
 
-    fig = go.Figure(data=[go.Candlestick(
-        x=df['time'],
-        open=df['open'],
-        high=df['high'],
-        low=df['low'],
-        close=df['close']
-    )])
+    # Tạo subplot cho biểu đồ nến và histogram
+    fig = make_subplots(rows=2, cols=1, shared_xaxes=True, row_heights=[0.7, 0.3])
 
-    fig.update_layout(
-        xaxis_title='Thời gian',
-        yaxis_title='Giá',
-        plot_bgcolor='#363636',
-        xaxis_gridcolor='gray',
-        yaxis_gridcolor='gray',
-        xaxis_rangeslider_visible=True
-    )
+    # Tạo danh sách màu cho biểu đồ histogram
+    colors = ['green' if close > open else 'red' for open, close in zip(df['open'], df['close'])]
+
+    # Biểu đồ nến
+    candlestick = go.Candlestick(x=df['time'],
+                    open=df['open'],
+                    high=df['high'],
+                    low=df['low'],
+                    close=df['close'])
+    fig.add_trace(candlestick, row=1, col=1)
+
+    # Biểu đồ histogram khối lượng giao dịch với màu tùy theo giá đóng cửa
+    bar = go.Bar(x=df['time'], y=df['volume'], marker_color=colors)
+    fig.add_trace(bar, row=2, col=1)
+
+    # Tùy chỉnh biểu đồ nến
+    fig.update_xaxes(title_text="Thời gian", row=2, col=1)
+    fig.update_yaxes(title_text="Giá", row=1, col=1)
+
+    # Tùy chỉnh trục y cho biểu đồ histogram
+    fig.update_xaxes(title_text="Thời gian", row=1, col=1)
+    fig.update_yaxes(title_text="Khối lượng giao dịch", secondary_y=True, row=2, col=1)
+
+    # Hiển thị biểu đồ
+    fig.update_layout(title='Biểu đồ nến và Khối lượng giao dịch',
+                    plot_bgcolor='#363636',  # Màu nền của biểu đồ
+                    xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
+                    yaxis_gridcolor='gray',  # Màu của đường kẻ ngang
+                    xaxis_rangeslider_visible=True)
+
 
     plot_html = fig.to_html(full_html=False)
 
