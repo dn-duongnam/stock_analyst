@@ -26,7 +26,7 @@ app.secret_key = 'Duong Nam'
 # app.config['MYSQL_DATABASE_AUTH_PLUGIN'] = 'mysql_native_password'
 
 app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_PORT'] = 3308
+app.config['MYSQL_PORT'] = 3306
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'stock_db'
@@ -172,7 +172,9 @@ def create_cand1Y_chart(timeframe="d1", ticker="TCH", start_year = 2016, end_yea
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
                     yaxis_gridcolor='gray',  # Màu của đường kẻ ngang
-                    xaxis_rangeslider_visible=True)
+                    xaxis_rangeslider_visible=True,
+                    # width=500,
+                    height=700)
 
     plot_html = fig.to_html(full_html=False)
 
@@ -256,7 +258,8 @@ def create_cand_chart_100(timeframe="d1", ticker="TCH"):
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
                     yaxis_gridcolor='gray',  # Màu của đường kẻ ngang
-                    xaxis_rangeslider_visible=True)
+                    xaxis_rangeslider_visible=True,
+                    height=700)
 
 
     plot_html = fig.to_html(full_html=False)
@@ -315,7 +318,8 @@ def analyst(ticker = "TCH"):
                     yanchor="bottom",
                     y=1.02,
                     xanchor="right",
-                    x=1)) # Màu của đường kẻ ngang
+                    x=1),
+                    height=700) # Màu của đường kẻ ngang
     # Chuyển biểu đồ Plotly thành HTML
     plot_bb = fig_bb.to_html(full_html=False)
      # Tính trung bình trượt 5 ngày và 20 ngày
@@ -344,7 +348,8 @@ def analyst(ticker = "TCH"):
                     yanchor="bottom",
                     y=1.02,
                     xanchor="right",
-                    x=1))# Màu của đường kẻ ngang
+                    x=1),
+                    height=700)# Màu của đường kẻ ngang
     plot_ma = fig_ma.to_html(full_html=False)
     
         # Tính đường MACD (Moving Average Convergence Divergence)
@@ -382,7 +387,8 @@ def analyst(ticker = "TCH"):
                     yanchor="bottom",
                     y=1.02,
                     xanchor="right",
-                    x=1))# Màu của đường kẻ ngang đồ
+                    x=1),
+                    height=700)# Màu của đường kẻ ngang đồ
 
     plot_macd = fig_macd.to_html(full_html=False)
     
@@ -437,7 +443,8 @@ def analyst(ticker = "TCH"):
                     yanchor="bottom",
                     y=1.02,
                     xanchor="right",
-                    x=1))# Màu của đường kẻ ngang đồ
+                    x=1),
+                    height=700)# Màu của đường kẻ ngang đồ
     plot_stoch = fig_stoch.to_html(full_html=False)
     
     # Tính chỉ số RSI(14)
@@ -494,7 +501,8 @@ def analyst(ticker = "TCH"):
                     yanchor="bottom",
                     y=1.02,
                     xanchor="right",
-                    x=1))# Màu của đường kẻ ngang đồ
+                    x=1),
+                    height=700)# Màu của đường kẻ ngang đồ
     plot_rsi = fig_rsi.to_html(full_html=False)
     
     cur.execute("SELECT DISTINCT ticker FROM d1")
@@ -552,7 +560,8 @@ def analyst_3m(ticker = "TCH"):
                     yanchor="bottom",
                     y=1.02,
                     xanchor="right",
-                    x=1)) # Màu của đường kẻ ngang
+                    x=1),
+                    height=700) # Màu của đường kẻ ngang
     # Chuyển biểu đồ Plotly thành HTML
     plot_bb = fig_bb.to_html(full_html=False)
      # Tính trung bình trượt 5 ngày và 20 ngày
@@ -581,7 +590,8 @@ def analyst_3m(ticker = "TCH"):
                     yanchor="bottom",
                     y=1.02,
                     xanchor="right",
-                    x=1))# Màu của đường kẻ ngang
+                    x=1),
+                    height=700)# Màu của đường kẻ ngang
     plot_ma = fig_ma.to_html(full_html=False)
     
         # Tính đường MACD (Moving Average Convergence Divergence)
@@ -619,7 +629,8 @@ def analyst_3m(ticker = "TCH"):
                     yanchor="bottom",
                     y=1.02,
                     xanchor="right",
-                    x=1))# Màu của đường kẻ ngang đồ
+                    x=1),
+                    height=700)# Màu của đường kẻ ngang đồ
 
     plot_macd = fig_macd.to_html(full_html=False)
     
@@ -674,7 +685,8 @@ def analyst_3m(ticker = "TCH"):
                     yanchor="bottom",
                     y=1.02,
                     xanchor="right",
-                    x=1))# Màu của đường kẻ ngang đồ
+                    x=1),
+                    height=700)# Màu của đường kẻ ngang đồ
     plot_stoch = fig_stoch.to_html(full_html=False)
     
     # Tính chỉ số RSI(14)
@@ -731,7 +743,8 @@ def analyst_3m(ticker = "TCH"):
                     yanchor="bottom",
                     y=1.02,
                     xanchor="right",
-                    x=1))# Màu của đường kẻ ngang đồ
+                    x=1),
+                    height=700)# Màu của đường kẻ ngang đồ
     plot_rsi = fig_rsi.to_html(full_html=False)
     
     cur.execute("SELECT DISTINCT ticker FROM d1")
@@ -1462,8 +1475,8 @@ def overview_one(ticker="TCH"):
         plot_bgcolor='#363636',  # Màu nền của biểu đồ
         xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
         yaxis_gridcolor='gray',  # Màu của đường kẻ ngang
-        xaxis_rangeslider_visible=True
-)
+        xaxis_rangeslider_visible=True,
+        height=700)
 
     plot_html = fig.to_html(full_html=False)
     # Truy vấn dữ liệu từ SQL
