@@ -1180,8 +1180,8 @@ def indexmonthindustry(industry_code = "5300", type_mode = "1M"):
     return response
 
 @app.route("/")
-@app.route('/overview/<ticker>', methods=['GET', 'POST'])
-def overview(ticker = "TCH"):
+@app.route('/overview/market', methods=['GET', 'POST'])
+def overview():
     cur = mysql.connection.cursor()
         
     # Truy vấn dữ liệu từ SQL
@@ -1399,13 +1399,10 @@ def overview(ticker = "TCH"):
     plot_his_percent = fig_percent.to_html(full_html=False)
         
     #--------------------------------------------------------------------------------------------------------------------------------
-    cur.execute("SELECT DISTINCT ticker FROM d1")
-    stock_codes = [code[0] for code in cur.fetchall()]
     
 
     return render_template("/chart/overview/overview.html",plot_trans_values = plot_trans_values,
-                           plot_treemap = plot_treemap,plot_his_up = plot_his_up,plot_his_down=plot_his_down,  plot_his_volume= plot_his_volume, plot_his_percent= plot_his_percent,
-                           ticker=ticker, stock_codes=stock_codes)
+                           plot_treemap = plot_treemap,plot_his_up = plot_his_up,plot_his_down=plot_his_down,  plot_his_volume= plot_his_volume, plot_his_percent= plot_his_percent)
 
 #------------------------------------------------
 @app.route("/")
