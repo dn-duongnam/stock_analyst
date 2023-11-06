@@ -26,7 +26,7 @@ app.secret_key = 'Duong Nam'
 # app.config['MYSQL_DATABASE_AUTH_PLUGIN'] = 'mysql_native_password'
 
 app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_PORT'] = 3306
+app.config['MYSQL_PORT'] = 3308
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'stock_db'
@@ -1896,10 +1896,34 @@ def create_treemap_values(timeframe="daylyArray"):
 @app.route('/overview_other/<ticker>', methods=['GET', 'POST'])
 def overview_other(ticker="GOLD"):
     cur = mysql.connection.cursor()
-    
-    # cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 100", (ticker,))
-    cur.execute(f"SELECT * FROM d1 WHERE ticker = %s" , (ticker,))
+    cur.execute(f"SELECT * FROM foreign_table WHERE ticker = %s" , (ticker,))
     records = cur.fetchall()
+
+    columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'dividends', 'stock_splits']
+    df = pd.DataFrame.from_records(records, columns=columnName)
+    df['time_stamp'] = pd.to_datetime(df['time_stamp'], unit='s')
+    df['time'] = df['time_stamp'].dt.tz_localize('UTC').dt.tz_convert('Asia/Ho_Chi_Minh')
+    # df = df.sort_values(by='time', ascending=True).reset_index(drop=True)
+
+    fig = go.Figure(data=[go.Candlestick(
+        x=df['time'],
+        open=df['open'],
+        high=df['high'],
+        low=df['low'],
+        close=df['close']
+    )])
+
+    fig.update_layout(
+        xaxis_title='Thời gian',
+        yaxis_title='Giá',
+        plot_bgcolor='#363636',
+        xaxis_gridcolor='gray',
+        yaxis_gridcolor='gray',
+        xaxis_rangeslider_visible=True,
+        height=700
+    )
+
+    plot_html = fig.to_html(full_html=False)
     # Truy vấn dữ liệu từ SQL
     cur.execute("""SELECT * 
     FROM foreign_table
@@ -2000,11 +2024,32 @@ def overview_other(ticker="GOLD"):
     )
     plot_line_month = fig_line_month.to_html(full_html=False)
     
+    # Tạo biểu đồ với tùy chỉnh màu sắc và grid
+    fig_ts_line = px.line(df, x='time_stamp', y='close', title='')
+
+    # Tùy chỉnh màu đường line thành màu đỏ
+    fig_ts_line.update_traces(line=dict(color='red'))
+    fig_ts_line.update_traces(fill='tozeroy', fillcolor='rgba(255, 0, 0, 0.2)')
+
+    # Tùy chỉnh màu dưới đường line thành màu đỏ nhạt
+    fig_ts_line.update_layout(
+        xaxis_title='Thời gian',
+        yaxis_title='Giá',
+        plot_bgcolor='#FFFFFF',
+        xaxis_rangeslider_visible=True,
+        height=700
+    ) 
+
+    # Loại bỏ grid
+    fig_ts_line.update_xaxes(showgrid=False)
+    fig_ts_line.update_yaxes(showgrid=False)
+
+    plot_ts_line = fig_ts_line.to_html(full_html=False)
 
     cur.execute("SELECT DISTINCT ticker FROM foreign_table")
     stock_codes = [code[0] for code in cur.fetchall()]
 
-    return render_template("/chart/overview/overview_other.html",   plot_line_day  =  plot_line_day,  plot_line_month =  plot_line_month,  plot_line_quarter =  plot_line_quarter,  plot_line_year = plot_line_year,
+    return render_template("/chart/overview/overview_other.html",   plot_cand = plot_html, plot_ts_line = plot_ts_line, plot_line_day  =  plot_line_day,  plot_line_month =  plot_line_month,  plot_line_quarter =  plot_line_quarter,  plot_line_year = plot_line_year,
                            ticker=ticker, stock_codes=stock_codes)
     
     
