@@ -1891,5 +1891,123 @@ def create_treemap_values(timeframe="daylyArray"):
                            industry_codes = dict_industry_code,
                            selected_industries = selected_industries)
     
+# Vàng, dầu dolars
+@app.route("/")
+@app.route('/overview_other/<ticker>', methods=['GET', 'POST'])
+def overview_other(ticker="GOLD"):
+    cur = mysql.connection.cursor()
+    
+    # cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 100", (ticker,))
+    cur.execute(f"SELECT * FROM d1 WHERE ticker = %s" , (ticker,))
+    records = cur.fetchall()
+    # Truy vấn dữ liệu từ SQL
+    cur.execute("""SELECT * 
+    FROM foreign_table
+    WHERE ticker = %s;
+    """, (ticker,))
+    records = cur.fetchall()
+    columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'dividends', 'stock_splits']
+    df_price = pd.DataFrame.from_records(records, columns=columnName)
+    df_price['time_stamp'] = pd.to_datetime(df_price['time_stamp'], unit='s')
+    df_price['time'] = df_price['time_stamp'].dt.tz_localize('UTC').dt.tz_convert('Asia/Ho_Chi_Minh')
+    df_price['year'] = df_price['time'].dt.year
+    df_price['month'] = df_price['time'].dt.month
+    df_price['day'] = df_price['time'].dt.day
+    df_price['quarter'] = df_price['time'].dt.quarter
+    df_price.groupby('year').agg({
+    'open':'mean',
+    'close':'mean',
+    'high':'mean',
+    'low':'mean',
+    })
+    year_df = df_price.groupby('year').agg({
+                'open':'mean',
+                'close':'mean',
+                'high':'mean',
+                'low':'mean',
+            }).reset_index()
+
+    fig_line_year = go.Figure()
+    fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
+    fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
+    fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
+    fig_line_year.add_trace(go.Scatter(x=year_df['year'], y=year_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
+    fig_line_year.add_hline(y=year_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
+    fig_line_year.update_traces(textposition="bottom right")
+    fig_line_year.update_layout(
+        title=dict(text="Biểu đồ trung bình giá theo năm")
+    )
+    plot_line_year = fig_line_year.to_html(full_html=False)
+    
+    #-------------------------------------------------------------------------------------------------------------------------
+    day_df = df_price.groupby('day').agg({
+                'open':'mean',
+                'close':'mean',
+                'high':'mean',
+                'low':'mean',
+            }).reset_index()
+
+    fig_line_day = go.Figure()
+    fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
+    fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
+    fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
+    fig_line_day.add_trace(go.Scatter(x=day_df['day'], y=day_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
+    fig_line_day.add_hline(y=day_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
+    fig_line_day.update_traces(textposition="bottom right")
+    fig_line_day.update_layout(
+        title=dict(text="Biểu đồ trung bình giá theo ngày trong tháng")
+    )
+    plot_line_day = fig_line_day.to_html(full_html=False)
+
+    #---------------------------------------------------------------------------------------------------------------------------
+    
+    quarter_df = df_price.groupby('quarter').agg({
+                'open':'mean',
+                'close':'mean',
+                'high':'mean',
+                'low':'mean',
+            }).reset_index()
+
+    fig_line_quarter = go.Figure()
+    fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
+    fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
+    fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
+    fig_line_quarter.add_trace(go.Scatter(x=quarter_df['quarter'], y=quarter_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
+    fig_line_quarter.add_hline(y=day_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
+    fig_line_quarter.update_traces(textposition="bottom right")
+    fig_line_quarter.update_layout(
+        title=dict(text="Biểu đồ trung bình giá theo quý")
+    )
+    plot_line_quarter = fig_line_quarter.to_html(full_html=False)
+    
+    #--------------------------------------------------------------------------------------------------------------------------------
+    month_df = df_price.groupby('month').agg({
+                'open':'mean',
+                'close':'mean',
+                'high':'mean',
+                'low':'mean',
+            }).reset_index()
+
+    fig_line_month = go.Figure()
+    fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['high'], mode='lines+markers', name='High',line=dict(color='#FCB714')))
+    fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['low'], mode='lines+markers', name='Low', line=dict(color='#0EB194')))
+    fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['close'], mode='lines+markers', name='Close', line=dict(color='#2878BD')))
+    fig_line_month.add_trace(go.Scatter(x=month_df['month'], y=month_df['open'], mode='lines+markers', name='Open', line=dict(color='#70B0E0')))
+    fig_line_month.add_hline(y=month_df['close'].mean(), line_width=3, line_dash="dash", line_color="green")
+    fig_line_month.update_traces(textposition="bottom right")
+    fig_line_month.update_layout(
+        title=dict(text="Biểu đồ trung bình giá theo tháng")
+    )
+    plot_line_month = fig_line_month.to_html(full_html=False)
+    
+
+    cur.execute("SELECT DISTINCT ticker FROM foreign_table")
+    stock_codes = [code[0] for code in cur.fetchall()]
+
+    return render_template("/chart/overview/overview_other.html",   plot_line_day  =  plot_line_day,  plot_line_month =  plot_line_month,  plot_line_quarter =  plot_line_quarter,  plot_line_year = plot_line_year,
+                           ticker=ticker, stock_codes=stock_codes)
+    
+    
+    
 if __name__ == "__main__":
     app.run()
