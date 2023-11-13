@@ -18,19 +18,21 @@ from datetime import datetime, date
 app = Flask(__name__)
 app.secret_key = 'Duong Nam'
 
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_PORT'] = 3333
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = '1234abC@'
+app.config['MYSQL_DB'] = 'stock_db'
+app.config['MYSQL_DATABASE_AUTH_PLUGIN'] = 'mysql_native_password'
+
 # app.config['MYSQL_HOST'] = 'localhost'
-# app.config['MYSQL_PORT'] = 3333
+# app.config['MYSQL_PORT'] = 3309
 # app.config['MYSQL_USER'] = 'root'
-# app.config['MYSQL_PASSWORD'] = '1234abC@'
+# app.config['MYSQL_PASSWORD'] = ''
 # app.config['MYSQL_DB'] = 'stock_db'
 # app.config['MYSQL_DATABASE_AUTH_PLUGIN'] = 'mysql_native_password'
 
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_PORT'] = 3308
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''
-app.config['MYSQL_DB'] = 'stock_db'
-app.config['MYSQL_DATABASE_AUTH_PLUGIN'] = 'mysql_native_password'
+
 mysql = MySQL(app)
 
 #D1
@@ -97,7 +99,7 @@ mysql = MySQL(app)
 #     return render_template("/chart/cand/cand.html", plot_cand=plot_html, ticker=ticker, stock_codes=stock_codes, selected_timeframe=timeframe, open_price=open_price, close_price=close_price, high_price=high_price, low_price=low_price, volume=volume)
 # @app.route("/")
 @app.route('/cand/<timeframe>/<ticker>/<start_year>/<end_year>', methods=['GET', 'POST'])
-def create_cand1Y_chart(timeframe="d1", ticker="TCH", start_year = 2016, end_year = 2023):
+def create_cand1Y_chart(timeframe="d1", ticker="TCH", start_year = 2016, end_year = 2024):
     cur = mysql.connection.cursor()
 
     if timeframe == "m1":
@@ -133,6 +135,7 @@ def create_cand1Y_chart(timeframe="d1", ticker="TCH", start_year = 2016, end_yea
 
     # cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 100", (ticker,))
     cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s AND time_stamp >= {str(start_year)} AND time_stamp <= {str(end_year)}" , (ticker,))
+    # cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s AND time_stamp >= {start_year} AND time_stamp <= {end_year}" , (ticker,))
     records = cur.fetchall()
 
     columnName = ['ticker', 'time_stamp', 'open', 'low', 'high', 'close', 'volume', 'sum_price']
@@ -172,10 +175,14 @@ def create_cand1Y_chart(timeframe="d1", ticker="TCH", start_year = 2016, end_yea
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
                     yaxis_gridcolor='gray',  # Màu của đường kẻ ngang
-                    xaxis_rangeslider_visible=True,
+                    xaxis_rangeslider_visible=False,
                     # width=500,
-                    height=700)
-
+                    height=700,
+                    xaxis_tickformat = '%d %B (%a)<br>%Y'
+                    )
+    fig.update_xaxes(type='category',
+                     nticks=12)
+    
     plot_html = fig.to_html(full_html=False)
 
     cur.execute("SELECT DISTINCT ticker FROM d1")
@@ -192,14 +199,19 @@ def create_cand_chart_100(timeframe="d1", ticker="TCH"):
     cur = mysql.connection.cursor()
 
     if timeframe == "m1":
+        limited_time = 220
         table_name = "m1"
     elif timeframe == "m15":
+        limited_time = 2000
         table_name = "m15"
     elif timeframe == "m30":
+        limited_time = 2000
         table_name = "m30"
     elif timeframe == "h1":
+        limited_time = 350
         table_name = "h1"
     elif timeframe == "d1":
+        limited_time = 66
         table_name = "d1"
     else:
         return "Khung giờ không hợp lệ"
@@ -217,7 +229,7 @@ def create_cand_chart_100(timeframe="d1", ticker="TCH"):
     cur.execute(f"SELECT organName FROM company  WHERE ticker = %s" , (ticker,))
     organName = cur.fetchall()
     
-    cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s ORDER BY time_stamp DESC LIMIT 66", (ticker,))
+    cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s ORDER BY time_stamp DESC LIMIT {limited_time}", (ticker,))
     # cur.execute(f"SELECT * FROM {table_name} WHERE ticker = %s", (ticker,))
     records = cur.fetchall()
 
@@ -258,10 +270,11 @@ def create_cand_chart_100(timeframe="d1", ticker="TCH"):
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
                     yaxis_gridcolor='gray',  # Màu của đường kẻ ngang
-                    xaxis_rangeslider_visible=True,
+                    xaxis_rangeslider_visible=False,
                     height=700)
 
-
+    fig.update_xaxes(type='category',
+                     nticks=12)
     plot_html = fig.to_html(full_html=False)
 
     cur.execute("SELECT DISTINCT ticker FROM d1")
@@ -308,7 +321,7 @@ def analyst(ticker = "TCH"):
     fig_bb.update_layout(
                     xaxis=dict(title='Thời gian', showgrid=False),  # Ẩn đường kẻ dọc trên trục x
                     yaxis=dict(title='Giá'),  # Ẩn đường kẻ dọc trên trục y
-                    xaxis_rangeslider_visible=True,
+                    xaxis_rangeslider_visible=False,
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
                     xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
@@ -338,7 +351,7 @@ def analyst(ticker = "TCH"):
     fig_ma.update_layout(title='Biểu đồ Giá cổ phiếu và MA(5) và MA(20)',
                     xaxis=dict(title='Thời gian',  showgrid=False),
                     yaxis=dict(title='Giá'),
-                    xaxis_rangeslider_visible=True,
+                    xaxis_rangeslider_visible=False,
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
                     xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
@@ -377,7 +390,7 @@ def analyst(ticker = "TCH"):
     fig_macd.update_layout(
                     xaxis=dict(title='Thời gian', showgrid=False),
                     yaxis=dict(title='Giá trị'),
-                    xaxis_rangeslider_visible=True,
+                    xaxis_rangeslider_visible=False,
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
                     xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
@@ -432,7 +445,7 @@ def analyst(ticker = "TCH"):
     fig_stoch.update_layout(
                     xaxis=dict(title='Thời gian', showgrid=False),
                     yaxis=dict(title='%'),
-                    xaxis_rangeslider_visible=True,
+                    xaxis_rangeslider_visible=False,
                     yaxis_range=[0, 100],
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
@@ -491,7 +504,7 @@ def analyst(ticker = "TCH"):
     fig_rsi.update_layout(title='RSI(14) với Đường Giới Hạn 30 và 70',
                     xaxis=dict(title='Thời gian', showgrid=False),
                     yaxis=dict(title='RSI'),
-                    xaxis_rangeslider_visible=True,
+                    xaxis_rangeslider_visible=False,
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
                     xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
@@ -550,7 +563,7 @@ def analyst_3m(ticker = "TCH"):
     fig_bb.update_layout(
                     xaxis=dict(title='Thời gian', showgrid=False),  # Ẩn đường kẻ dọc trên trục x
                     yaxis=dict(title='Giá'),  # Ẩn đường kẻ dọc trên trục y
-                    xaxis_rangeslider_visible=True,
+                    xaxis_rangeslider_visible=False,
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
                     xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
@@ -580,7 +593,7 @@ def analyst_3m(ticker = "TCH"):
     fig_ma.update_layout(title='Biểu đồ Giá cổ phiếu và MA(5) và MA(20)',
                     xaxis=dict(title='Thời gian',  showgrid=False),
                     yaxis=dict(title='Giá'),
-                    xaxis_rangeslider_visible=True,
+                    xaxis_rangeslider_visible=False,
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
                     xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
@@ -619,7 +632,7 @@ def analyst_3m(ticker = "TCH"):
     fig_macd.update_layout(
                     xaxis=dict(title='Thời gian', showgrid=False),
                     yaxis=dict(title='Giá trị'),
-                    xaxis_rangeslider_visible=True,
+                    xaxis_rangeslider_visible=False,
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
                     xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
@@ -674,7 +687,7 @@ def analyst_3m(ticker = "TCH"):
     fig_stoch.update_layout(
                     xaxis=dict(title='Thời gian', showgrid=False),
                     yaxis=dict(title='%'),
-                    xaxis_rangeslider_visible=True,
+                    xaxis_rangeslider_visible=False,
                     yaxis_range=[0, 100],
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
@@ -733,7 +746,7 @@ def analyst_3m(ticker = "TCH"):
     fig_rsi.update_layout(title='RSI(14) với Đường Giới Hạn 30 và 70',
                     xaxis=dict(title='Thời gian', showgrid=False),
                     yaxis=dict(title='RSI'),
-                    xaxis_rangeslider_visible=True,
+                    xaxis_rangeslider_visible=False,
                     plot_bgcolor='#363636',  # Màu nền của biểu đồ
                     paper_bgcolor='white',  # Màu nền của toàn bộ khung biểu đồ
                     xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
@@ -1475,7 +1488,7 @@ def overview_one(ticker="TCH"):
         plot_bgcolor='#363636',  # Màu nền của biểu đồ
         xaxis_gridcolor='gray',  # Màu của đường kẻ ngang
         yaxis_gridcolor='gray',  # Màu của đường kẻ ngang
-        xaxis_rangeslider_visible=True,
+        xaxis_rangeslider_visible=False,
         height=700)
 
     plot_html = fig.to_html(full_html=False)
@@ -1919,7 +1932,7 @@ def overview_other(ticker="GOLD"):
         plot_bgcolor='#363636',
         xaxis_gridcolor='gray',
         yaxis_gridcolor='gray',
-        xaxis_rangeslider_visible=True,
+        xaxis_rangeslider_visible=False,
         height=700
     )
 
@@ -2036,7 +2049,7 @@ def overview_other(ticker="GOLD"):
         xaxis_title='Thời gian',
         yaxis_title='Giá',
         plot_bgcolor='#FFFFFF',
-        xaxis_rangeslider_visible=True,
+        xaxis_rangeslider_visible=False,
         height=700
     ) 
 
