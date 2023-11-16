@@ -1355,6 +1355,7 @@ def overview():
     fig_volume.update_layout(yaxis={'categoryorder':'total ascending'})
     fig_volume.update_traces(texttemplate='%{text:.2f}tr', textposition='outside')
     fig_volume.update_traces(marker_color='#34c6bb')
+    fig_volume.update_layout(showlegend=False) 
     plot_his_volume = fig_volume.to_html(full_html=False)
     
     #--------------------------------------------------------------------------------------------------------------------------------
@@ -1367,7 +1368,8 @@ def overview():
             color_discrete_sequence =['#fd625e', '#01b8aa'],
              title='% Biến động giá trong ngày')
     fig_percent.update_layout(yaxis={'categoryorder':'total ascending'})
-    fig_percent.update_traces(texttemplate='%{text:.2f}%', textposition='outside') 
+    fig_percent.update_traces(texttemplate='%{text:.2f}%', textposition='outside')
+    fig_percent.update_layout(showlegend=False) 
     plot_his_percent = fig_percent.to_html(full_html=False)
         
     #--------------------------------------------------------------------------------------------------------------------------------
